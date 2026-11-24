@@ -1,0 +1,797 @@
+import { SchoolProfile, AdministrasiDocuments, SupervisiRecord, SupervisiPoint } from './types';
+
+export const initialProfile: SchoolProfile = {
+  schoolName: 'SMP NEGERI 1 TELADAN',
+  npsn: '20104567',
+  schoolAddress: 'Jl. Pendidikan No. 45, Kompleks Pendidikan',
+  district: 'Kec. Sukamaju',
+  city: 'Kota Pelajar',
+  province: 'Jawa Barat',
+  postalCode: '40123',
+  schoolEmail: 'smpn1teladan@sekolah.belajar.id',
+  schoolWebsite: 'https://smpn1teladan.sch.id',
+  headmasterName: 'Drs. H. Ahmad Fauzi, M.Pd.',
+  headmasterNip: '19680512 199303 1 004',
+  supervisorName: 'Dr. Hj. Siti Nurhasanah, M.Pd.',
+  supervisorNip: '19710815 199702 2 001',
+  teacherName: 'Budi Santoso, S.Pd., Gr.',
+  teacherNip: '19880421 201503 1 002',
+  subject: 'Informatika',
+  phase: 'Fase D (SMP)',
+  grade: 'Kelas VII',
+  academicYear: '2024/2025',
+  semester: 'Ganjil',
+  documentDate: '15 Juli 2024'
+};
+
+export const initialDocuments: AdministrasiDocuments = {
+  // 1. Analisis Alokasi Waktu
+  alokasiWaktu: {
+    jamPelajaranPerMinggu: 2,
+    semesterGanjil: [
+      { bulan: 'Juli', jumlahMinggu: 5, mingguEfektif: 3, mingguTidakEfektif: 2, keterangan: 'MPLS dan Libur Akhir Semester' },
+      { bulan: 'Agustus', jumlahMinggu: 4, mingguEfektif: 4, mingguTidakEfektif: 0, keterangan: 'Kegiatan Belajar Mengajar' },
+      { bulan: 'September', jumlahMinggu: 4, mingguEfektif: 3, mingguTidakEfektif: 1, keterangan: 'Sumatif Tengah Semester (STS)' },
+      { bulan: 'Oktober', jumlahMinggu: 5, mingguEfektif: 5, mingguTidakEfektif: 0, keterangan: 'Kegiatan Belajar Mengajar' },
+      { bulan: 'November', jumlahMinggu: 4, mingguEfektif: 4, mingguTidakEfektif: 0, keterangan: 'Kegiatan Belajar Mengajar & P5' },
+      { bulan: 'Desember', jumlahMinggu: 4, mingguEfektif: 1, mingguTidakEfektif: 3, keterangan: 'SAS, Pengolahan Nilai & Libur' }
+    ],
+    semesterGenap: [
+      { bulan: 'Januari', jumlahMinggu: 5, mingguEfektif: 4, mingguTidakEfektif: 1, keterangan: 'Awal Semester & KBM' },
+      { bulan: 'Februari', jumlahMinggu: 4, mingguEfektif: 4, mingguTidakEfektif: 0, keterangan: 'Kegiatan Belajar Mengajar' },
+      { bulan: 'Maret', jumlahMinggu: 4, mingguEfektif: 3, mingguTidakEfektif: 1, keterangan: 'Sumatif Tengah Semester / Libur Awal Puasa' },
+      { bulan: 'April', jumlahMinggu: 4, mingguEfektif: 2, mingguTidakEfektif: 2, keterangan: 'Libur Hari Raya Idul Fitri' },
+      { bulan: 'Mei', jumlahMinggu: 5, mingguEfektif: 4, mingguTidakEfektif: 1, keterangan: 'Ujian Kelulusan & KBM' },
+      { bulan: 'Juni', jumlahMinggu: 4, mingguEfektif: 1, mingguTidakEfektif: 3, keterangan: 'SAT, Pembagian Rapor & Libur Kenaikan' }
+    ],
+    kegiatanNonEfektif: [
+      { kegiatan: 'Masa Pengenalan Lingkungan Sekolah (MPLS)', jumlahMinggu: 1 },
+      { kegiatan: 'Sumatif Tengah Semester (STS)', jumlahMinggu: 1 },
+      { kegiatan: 'Sumatif Akhir Semester (SAS)', jumlahMinggu: 1 },
+      { kegiatan: 'Pengolahan Nilai & Pembagian Rapor', jumlahMinggu: 1 },
+      { kegiatan: 'Libur Akhir Semester', jumlahMinggu: 2 }
+    ],
+    catatanDistribusi: 'Total Minggu Efektif Semester Ganjil: 20 Minggu. Total JP Efektif: 20 x 2 JP = 40 JP (36 JP Pembelajaran Intrakurikuler, 4 JP Cadangan/Remedial).'
+  },
+
+  // 2. Program Tahunan (Prota)
+  prota: [
+    {
+      no: 1,
+      elemen: 'Berpikir Komputasional (BK)',
+      capaianPembelajaran: 'Peserta didik mampu menerapkan berpikir komputasional untuk menghasilkan solusi terhadap persoalan sehari-hari.',
+      tujuanPembelajaran: 'Menerapkan konsep pola, dekomposisi, abstraksi, dan algoritma dalam kehidupan sehari-hari.',
+      materiPokok: 'Fondasi Berpikir Komputasional (Dekomposisi, Pola, Abstraksi, Algoritma)',
+      alokasiWaktuJP: 8,
+      semester: 'Ganjil'
+    },
+    {
+      no: 2,
+      elemen: 'Teknologi Informasi dan Komunikasi (TIK)',
+      capaianPembelajaran: 'Peserta didik mampu memanfaatkan antarmuka grafis, surel, peramban, aplikasi pengolah kata dan angka.',
+      tujuanPembelajaran: 'Mengoperasikan pengolah kata dan lembar kerja untuk membuat laporan sederhana serta integrasi antar aplikasi.',
+      materiPokok: 'Pengenalan Surel, Peramban Web, dan Pembuatan Dokumen Terpadu',
+      alokasiWaktuJP: 12,
+      semester: 'Ganjil'
+    },
+    {
+      no: 3,
+      elemen: 'Sistem Komputer (SK)',
+      capaianPembelajaran: 'Peserta didik mampu menjelaskan komponen, fungsi, dan cara kerja perangkat keras, perangkat lunak, dan sistem operasi.',
+      tujuanPembelajaran: 'Mengidentifikasi perangkat keras (input, proses, output, storage) serta interaksi perangkat dan manusia.',
+      materiPokok: 'Perangkat Keras, Perangkat Lunak, dan Interaksi Manusia Komputer',
+      alokasiWaktuJP: 8,
+      semester: 'Ganjil'
+    },
+    {
+      no: 4,
+      elemen: 'Jaringan Komputer dan Internet (JKI)',
+      capaianPembelajaran: 'Peserta didik mampu memahami konektivitas jaringan lokal dan internet, enkripsi data, dan proteksi data pribadi.',
+      tujuanPembelajaran: 'Menghubungkan perangkat ke jaringan lokal dan internet serta mempraktikkan keamanan data pribadi di dunia maya.',
+      materiPokok: 'Jaringan Lokal, Internet, dan Keamanan Data',
+      alokasiWaktuJP: 8,
+      semester: 'Ganjil'
+    },
+    {
+      no: 5,
+      elemen: 'Analisis Data (AD)',
+      capaianPembelajaran: 'Peserta didik mampu mengolah, memvisualisasikan, dan menginterpretasikan data menggunakan perkakas pengolah data.',
+      tujuanPembelajaran: 'Menginput, memfilter, mengurutkan data, dan membuat grafik visualisasi data sederhana.',
+      materiPokok: 'Pengolahan dan Visualisasi Data dengan Lembar Kerja',
+      alokasiWaktuJP: 10,
+      semester: 'Genap'
+    },
+    {
+      no: 6,
+      elemen: 'Algoritma dan Pemrograman (AP)',
+      capaianPembelajaran: 'Peserta didik mampu memahami objek pemrograman visual dan membuat program sederhana yang memiliki logika sekuensial dan seleksi.',
+      tujuanPembelajaran: 'Membuat animasi dan game edukasi interaktif menggunakan pemrograman visual berbasis blok (Scratch).',
+      materiPokok: 'Pemrograman Visual Berbasis Blok (Scratch)',
+      alokasiWaktuJP: 14,
+      semester: 'Genap'
+    },
+    {
+      no: 7,
+      elemen: 'Dampak Sosial Informatika (DSI)',
+      capaianPembelajaran: 'Peserta didik mampu memahami etika berinternet, jejak digital, hukum siber, dan kolaborasi daring.',
+      tujuanPembelajaran: 'Menjelaskan dampak positif dan negatif media sosial serta menjaga etika (netiket) di ruang digital.',
+      materiPokok: 'Etika Digital, Netiket, dan Pencegahan Cyberbullying',
+      alokasiWaktuJP: 6,
+      semester: 'Genap'
+    },
+    {
+      no: 8,
+      elemen: 'Praktik Lintas Bidang (PLB)',
+      capaianPembelajaran: 'Peserta didik mampu bergotong royong menghasilkan artefak komputasional untuk menyelesaikan permasalahan nyata.',
+      tujuanPembelajaran: 'Merancang dan mempresentasikan proyek kolaboratif teknologi pemecahan masalah di lingkungan sekolah.',
+      materiPokok: 'Proyek Komputasi Berkelompok Lintas Bidang',
+      alokasiWaktuJP: 8,
+      semester: 'Genap'
+    }
+  ],
+
+  // 3. Program Semester (Promes)
+  promes: {
+    semester: 'Ganjil',
+    bulanList: [
+      { nama: 'Juli', mingguCount: 5 },
+      { nama: 'Agustus', mingguCount: 4 },
+      { nama: 'September', mingguCount: 4 },
+      { nama: 'Oktober', mingguCount: 5 },
+      { nama: 'November', mingguCount: 4 },
+      { nama: 'Desember', mingguCount: 4 }
+    ],
+    items: [
+      {
+        no: 1,
+        tujuanPembelajaran: 'Menerapkan 4 fondasi Berpikir Komputasional (BK)',
+        materiPokok: 'Fondasi Berpikir Komputasional',
+        alokasiJP: 8,
+        distribusiMinggu: {
+          'Juli_3': 2,
+          'Juli_4': 2,
+          'Agustus_1': 2,
+          'Agustus_2': 2
+        }
+      },
+      {
+        no: 2,
+        tujuanPembelajaran: 'Mengoperasikan pengolah kata dan lembar kerja secara terpadu',
+        materiPokok: 'Integrasi Aplikasi Perkantoran & Surel',
+        alokasiJP: 12,
+        distribusiMinggu: {
+          'Agustus_3': 2,
+          'Agustus_4': 2,
+          'September_1': 2,
+          'September_2': 2,
+          'Oktober_1': 2,
+          'Oktober_2': 2
+        }
+      },
+      {
+        no: 3,
+        tujuanPembelajaran: 'Mengidentifikasi perangkat keras, perangkat lunak, dan interaksi sistem',
+        materiPokok: 'Sistem Komputer & Interaksi Komputer',
+        alokasiJP: 8,
+        distribusiMinggu: {
+          'Oktober_3': 2,
+          'Oktober_4': 2,
+          'Oktober_5': 2,
+          'November_1': 2
+        }
+      },
+      {
+        no: 4,
+        tujuanPembelajaran: 'Menghubungkan perangkat ke jaringan internet & keamanan data pribadi',
+        materiPokok: 'Jaringan Komputer dan Keamanan Siber Sederhana',
+        alokasiJP: 8,
+        distribusiMinggu: {
+          'November_2': 2,
+          'November_3': 2,
+          'November_4': 2,
+          'Desember_1': 2
+        }
+      }
+    ]
+  },
+
+  // 4. Alur Tujuan Pembelajaran (ATP)
+  atp: [
+    {
+      no: 1,
+      elemen: 'Berpikir Komputasional',
+      capaianPembelajaran: 'Peserta didik mampu menerapkan berpikir komputasional untuk menghasilkan banyak solusi dari persoalan dengan data diskrit bervolume kecil.',
+      tujuanPembelajaran: '7.1.1 Menganalisis masalah sehari-hari dan memecahnya menjadi bagian-bagian yang lebih kecil (Dekomposisi).',
+      indikatorKetercapaian: [
+        'Mengidentifikasi masalah inti dari studi kasus nyata.',
+        'Mengelompokkan sub-masalah secara mandiri.',
+        'Menyusun skema penyelesaian terstruktur.'
+      ],
+      profilPelajarPancasila: ['Bernalar Kritis', 'Mandiri'],
+      alokasiWaktuJP: 4,
+      kataKunciMateri: 'Dekomposisi, Struktur Masalah, Solusi',
+      glosarium: 'Dekomposisi: proses memecah masalah besar menjadi bagian kecil yang dapat dikelola.'
+    },
+    {
+      no: 2,
+      elemen: 'Berpikir Komputasional',
+      capaianPembelajaran: 'Peserta didik mampu menyusun algoritma terstruktur untuk menyelesaikan persoalan.',
+      tujuanPembelajaran: '7.1.2 Merancang langkah-langkah logis dan terurut (Algoritma) dalam menyelesaikan tugas nyata.',
+      indikatorKetercapaian: [
+        'Menjelaskan pengertian algoritma dalam konteks komputasi.',
+        'Membuat diagram alir (flowchart) sederhana.',
+        'Mengevaluasi efisiensi langkah algoritma yang disusun.'
+      ],
+      profilPelajarPancasila: ['Bernalar Kritis', 'Kreatif'],
+      alokasiWaktuJP: 4,
+      kataKunciMateri: 'Algoritma, Flowchart, Logika Langkah',
+      glosarium: 'Algoritma: urutan instruksi terdefinisi dengan jelas untuk memecahkan masalah.'
+    },
+    {
+      no: 3,
+      elemen: 'Teknologi Informasi dan Komunikasi',
+      capaianPembelajaran: 'Peserta didik mampu memanfaatkan antarmuka grafis, surel, peramban, serta aplikasi perkantoran terpadu.',
+      tujuanPembelajaran: '7.2.1 Membuat laporan digital yang rapi menggunakan fitur format teks, tabel, dan gambar pada pengolah kata.',
+      indikatorKetercapaian: [
+        'Mengatur margin, spasi, dan font standar formal.',
+        'Menyisipkan tabel dan gambar ilustrasi relevan.',
+        'Menyimpan dan mengonversi berkas ke format PDF.'
+      ],
+      profilPelajarPancasila: ['Mandiri', 'Kreatif'],
+      alokasiWaktuJP: 6,
+      kataKunciMateri: 'Pengolah Kata, Layout Dokumen, Ekspor PDF',
+      glosarium: 'Layout: tata letak elemen visual pada sebuah halaman dokumen.'
+    }
+  ],
+
+  // 5. Modul Ajar
+  modulAjar: {
+    id: 'MA-INF-01',
+    judulModul: 'Modul Ajar: Fondasi Berpikir Komputasional dalam Kehidupan Nyata',
+    fase: 'Fase D',
+    elemen: 'Berpikir Komputasional (BK)',
+    alokasiWaktu: '2 Pertemuan (4 JP x 40 Menit)',
+    kompetensiAwal: 'Peserta didik telah mengenal penggunaan perangkat gawai sederhana dan aktivitas pemecahan masalah sehari-hari.',
+    profilPelajarPancasila: [
+      'Bernalar Kritis (menganalisis dan mengevaluasi penalaran)',
+      'Gotong Royong (bekerja sama dalam kelompok diskusi)',
+      'Kreatif (menghasilkan gagasan orisinal dalam memecahkan teka-teki)'
+    ],
+    saranaPrasarana: 'Laptop/Komputer/Ponsel pintar, Proyektor, Kartu Teka-Teki Bebras Task, Lembar Kerja (LKPD), Papan Tulis.',
+    targetPesertaDidik: 'Peserta didik reguler/tipikal (tidak ada kesulitan dalam mencerna materi ajar)',
+    modelPembelajaran: 'Problem Based Learning (PBL) dipadukan dengan Pendekatan Unplugged (tanpa komputer)',
+    metodePembelajaran: 'Diskusi kelompok, simulasi permainan peran, penugasan proyek mini, dan presentasi',
+    tujuanPembelajaran: [
+      'Menjelaskan 4 fondasi berpikir komputasional (Dekomposisi, Pengenalan Pola, Abstraksi, Algoritma).',
+      'Menerapkan fondasi berpikir komputasional untuk menyelesaikan studi kasus persoalan sehari-hari.',
+      'Menyajikan hasil analisis solusi komputasional secara lisan dan tertulis dengan percaya diri.'
+    ],
+    pemahamanBermakna: 'Berpikir komputasional bukan hanya tentang komputer, melainkan cara manusia berpikir secara terstruktur, runtut, dan efisien untuk menyelesaikan berbagai tantangan hidup.',
+    pertanyaanPemantik: [
+      'Pernahkah kalian merencanakan rute tercepat dari rumah ke sekolah saat terjadi banjir?',
+      'Bagaimana cara koki di restoran terkenal menyiapkan 50 porsi makanan dalam waktu singkat tanpa salah resep?',
+      'Jika sebuah ponsel mati mendadak, langkah apa yang pertama kali kalian lakukan untuk mencari penyebabnya?'
+    ],
+    kegiatanPembelajaran: [
+      {
+        pertemuanKe: 1,
+        alokasiMenit: 80,
+        pendahuluan: [
+          'Guru membuka pembelajaran dengan salam, doa bersama, dan presensi kehadiran.',
+          'Guru menyampaikan apersepsi dengan menayangkan gambar "Robot Pemilah Sampah".',
+          'Guru menyampaikan tujuan pembelajaran dan indikator ketercapaian hari ini.'
+        ],
+        inti: [
+          'Orientasi Masalah: Guru menyajikan teka-teki "Kasus Menyeberangkan Serigala, Kambing, dan Sayur ke Seberang Sungai".',
+          'Organisasi Belajar: Peserta didik dibagi menjadi kelompok kecil beranggotakan 4 orang dan dibagikan LKPD 1.',
+          'Penyelidikan: Peserta didik berdiskusi memecahkan teka-teki dengan 4 pilar (Dekomposisi, Pola, Abstraksi, Algoritma).',
+          'Pengembangan Hasil: Masing-masing kelompok menuliskan diagram urutan langkah solusi di lembar LKPD.',
+          'Evaluasi: Dua kelompok mempresentasikan hasil di depan kelas, kelompok lain memberikan tanggapan.'
+        ],
+        penutup: [
+          'Guru bersama peserta didik menyimpulkan esensi 4 fondasi berpikir komputasional.',
+          'Guru memberikan umpan balik dan penguatan konsep.',
+          'Guru menutup pertemuan dengan refleksi singkat dan doa penutup.'
+        ]
+      }
+    ],
+    asesmenAwal: 'Kuis diagnosa singkat 3 butir pertanyaan tentang logika penalaran sederhana.',
+    asesmenFormatif: 'Observasi keaktifan diskusi kelompok, penilaian unjuk kerja saat presentasi LKPD 1, dan rubrik asesmen teman sebaya.',
+    asesmenSumatif: 'Tes tertulis pilihan ganda dan studi kasus uraian terstruktur di akhir bab.',
+    remedialDanPengayaan: 'Remedial: pendampingan terbimbing untuk peserta didik yang belum tuntas menganalisis urutan logika. Pengayaan: pemberian tantangan soal Bebras Task tingkat lanjut.',
+    refleksiGuru: [
+      'Apakah seluruh peserta didik aktif berpartisipasi dalam diskusi kelompok?',
+      'Apakah pendekatan unplugged efektif membantu siswa memahami konsep abstrak tanpa komputer?',
+      'Bagian mana dari langkah pembelajaran yang perlu alokasi waktu lebih banyak?'
+    ],
+    refleksiSiswa: [
+      'Bagian apa dari materi berpikir komputasional yang paling menarik menurutmu?',
+      'Tantangan apa yang paling sulit kamu rasakan saat memecahkan teka-teki bersama kelompok?',
+      'Bagaimana kamu bisa menerapkan cara berpikir teratur ini dalam belajar pelajaran lain?'
+    ]
+  },
+
+  // 6. Jadwal Pelajaran
+  jadwalPelajaran: [
+    { hari: 'Senin', jamKe: '1 - 2', waktu: '07.30 - 08.50', kelas: 'VII-A', mataPelajaran: 'Informatika', ruang: 'Lab Komputer 1' },
+    { hari: 'Senin', jamKe: '3 - 4', waktu: '09.10 - 10.30', kelas: 'VII-B', mataPelajaran: 'Informatika', ruang: 'Lab Komputer 1' },
+    { hari: 'Selasa', jamKe: '1 - 2', waktu: '07.30 - 08.50', kelas: 'VII-C', mataPelajaran: 'Informatika', ruang: 'Lab Komputer 2' },
+    { hari: 'Selasa', jamKe: '5 - 6', waktu: '10.50 - 12.10', kelas: 'VII-D', mataPelajaran: 'Informatika', ruang: 'Lab Komputer 2' },
+    { hari: 'Rabu', jamKe: '3 - 4', waktu: '09.10 - 10.30', kelas: 'VII-E', mataPelajaran: 'Informatika', ruang: 'Lab Komputer 1' },
+    { hari: 'Kamis', jamKe: '1 - 2', waktu: '07.30 - 08.50', kelas: 'VII-F', mataPelajaran: 'Informatika', ruang: 'Lab Komputer 2' }
+  ],
+
+  // 7. Jurnal Mengajar Harian / Agenda Guru
+  agendaHarian: [
+    {
+      id: 'JH-001',
+      hariTanggal: 'Senin, 22 Juli 2024',
+      jamKe: '1 - 2 (07.30 - 08.50)',
+      kelas: 'VII-A',
+      tujuanPembelajaran: '7.1.1 Memahami konsep dekomposisi dalam Berpikir Komputasional',
+      materiDanKegiatan: 'Materi 4 Fondasi BK. Aktivitas studi kasus pemilahan sampah dan diskusi LKPD 1. Siswa antusias memecahkan teka-teki Bebras.',
+      kehadiranSiswa: 'Hadir: 31, Sakit: 1 (Rian), Izin: 0, Alpa: 0 (Total 32 siswa)',
+      catatanRefleksi: 'Pembelajaran berjalan lancar. Perlu pendampingan ekstra pada kelompok 4 untuk pemahaman istilah abstraksi.',
+      tandaTanganStatus: true
+    },
+    {
+      id: 'JH-002',
+      hariTanggal: 'Senin, 29 Juli 2024',
+      jamKe: '1 - 2 (07.30 - 08.50)',
+      kelas: 'VII-A',
+      tujuanPembelajaran: '7.1.2 Merancang algoritma langkah terurut dan flowchart',
+      materiDanKegiatan: 'Pengenalan simbol flowchart dan pembuatan diagram alir resep membuat teh manis. Presentasi perwakilan 2 kelompok.',
+      kehadiranSiswa: 'Hadir: 32, Sakit: 0, Izin: 0, Alpa: 0 (Lengkap 32 siswa)',
+      catatanRefleksi: 'Siswa sudah mampu membedakan simbol proses dan simbol keputusan logika (decision).',
+      tandaTanganStatus: true
+    },
+    {
+      id: 'JH-003',
+      hariTanggal: 'Senin, 5 Agustus 2024',
+      jamKe: '1 - 2 (07.30 - 08.50)',
+      kelas: 'VII-A',
+      tujuanPembelajaran: '7.2.1 Pengoperasian dasar aplikasi perkantoran terpadu',
+      materiDanKegiatan: 'Praktik di Lab Komputer: pembuatan dokumen proposal kegiatan dengan format teks, margin, dan tabel.',
+      kehadiranSiswa: 'Hadir: 30, Sakit: 1, Izin: 1, Alpa: 0 (Total 32 siswa)',
+      catatanRefleksi: 'Lab komputer bekerja optimal. Seluruh siswa berhasil menyimpan berkas ke folder masing-masing.',
+      tandaTanganStatus: true
+    }
+  ],
+
+  // 8. Kriteria Ketercapaian Tujuan Pembelajaran (KKTP)
+  kktp: [
+    {
+      no: 1,
+      tujuanPembelajaran: 'Menganalisis masalah sehari-hari dan memecahnya menjadi bagian-bagian lebih kecil (Dekomposisi)',
+      pendekatan: 'Interval Nilai',
+      kriteriaInterval: {
+        perluBimbingan: '0 - 68: Belum mampu mengidentifikasi komponen masalah inti, membutuhkan bimbingan penuh.',
+        cukup: '69 - 79: Mampu mengidentifikasi sebagian sub-masalah namun belum terstruktur rapi.',
+        baik: '80 - 89: Mampu menguraikan seluruh sub-masalah dengan mandiri dan logis.',
+        sangatBaik: '90 - 100: Mampu menguraikan masalah kompleks serta memberikan alternatif solusi prioritas.'
+      },
+      tindakLanjut: 'Siswa dengan nilai < 69 diberikan bimbingan tutorial teman sebaya dan penugasan ulang dengan studi kasus sederhana.'
+    },
+    {
+      no: 2,
+      tujuanPembelajaran: 'Merancang algoritma langkah logis terurut dan diagram alir (Flowchart)',
+      pendekatan: 'Interval Nilai',
+      kriteriaInterval: {
+        perluBimbingan: '0 - 68: Langkah acak, belum memahami arti urutan instruksi dan simbol flowchart.',
+        cukup: '69 - 79: Langkah sudah urut namun terdapat kesalahan pada pemilihan simbol percabangan.',
+        baik: '80 - 89: Langkah runtut, menggunakan simbol flowchart standar dengan benar.',
+        sangatBaik: '90 - 100: Menghasilkan algoritma yang sangat efisien dan mampu menganalisis kemungkinan error.'
+      },
+      tindakLanjut: 'Siswa pada kategori Baik dan Sangat Baik diberikan materi pengayaan berupa konversi algoritma ke pseudocode.'
+    },
+    {
+      no: 3,
+      tujuanPembelajaran: 'Membuat dokumen laporan digital terpadu dengan tabel dan grafik',
+      pendekatan: 'Interval Nilai',
+      kriteriaInterval: {
+        perluBimbingan: '0 - 68: Belum dapat mengoperasikan fitur margin, tabel, dan penyisipan objek.',
+        cukup: '69 - 79: Mampu membuat tabel sederhana tetapi tata letak belum rapi.',
+        baik: '80 - 89: Format dokumen rapi sesuai kaidah formal dan tabel tersusun baik.',
+        sangatBaik: '90 - 100: Desain laporan sangat estetik, integrasi grafik data presisi dan diekspor ke PDF.'
+      },
+      tindakLanjut: 'Memberikan bimbingan praktik mandiri di lab sekolah pada jam istirahat atau ekstrakurikuler komputer.'
+    }
+  ],
+
+  // 9. Daftar Hadir Siswa
+  daftarHadir: [
+    { no: 1, nisn: '0102938401', nama: 'Aditya Pratama', jenisKelamin: 'L', hadir: 16, sakit: 0, izin: 0, alpa: 0, persentase: 100 },
+    { no: 2, nisn: '0102938402', nama: 'Aisyah Putri Rahmadani', jenisKelamin: 'P', hadir: 15, sakit: 1, izin: 0, alpa: 0, persentase: 94 },
+    { no: 3, nisn: '0102938403', nama: 'Bagus Setiawan', jenisKelamin: 'L', hadir: 16, sakit: 0, izin: 0, alpa: 0, persentase: 100 },
+    { no: 4, nisn: '0102938404', nama: 'Cantika Dewi Lestari', jenisKelamin: 'P', hadir: 14, sakit: 1, izin: 1, alpa: 0, persentase: 88 },
+    { no: 5, nisn: '0102938405', nama: 'Dimas Anggara', jenisKelamin: 'L', hadir: 16, sakit: 0, izin: 0, alpa: 0, persentase: 100 },
+    { no: 6, nisn: '0102938406', nama: 'Fajar Nugraha', jenisKelamin: 'L', hadir: 15, sakit: 0, izin: 1, alpa: 0, persentase: 94 },
+    { no: 7, nisn: '0102938407', nama: 'Gita Maharani', jenisKelamin: 'P', hadir: 16, sakit: 0, izin: 0, alpa: 0, persentase: 100 },
+    { no: 8, nisn: '0102938408', nama: 'Haikal Rabbani', jenisKelamin: 'L', hadir: 13, sakit: 2, izin: 1, alpa: 0, persentase: 81 },
+    { no: 9, nisn: '0102938409', nama: 'Indah Permatasari', jenisKelamin: 'P', hadir: 16, sakit: 0, izin: 0, alpa: 0, persentase: 100 },
+    { no: 10, nisn: '0102938410', nama: 'Kevin Sanjaya', jenisKelamin: 'L', hadir: 16, sakit: 0, izin: 0, alpa: 0, persentase: 100 }
+  ],
+
+  // 10. Buku Daftar Nilai
+  daftarNilai: [
+    {
+      no: 1,
+      nisn: '0102938401',
+      nama: 'Aditya Pratama',
+      formatif: [85, 88, 90],
+      sumatifLingkupMateri: [88, 92, 85],
+      sumatifAkhirSemester: 90,
+      nilaiAkhir: 89,
+      capaianKompetensi: 'Menunjukkan penguasaan sangat baik dalam menerapkan berpikir komputasional dan pengolahan dokumen terpadu.'
+    },
+    {
+      no: 2,
+      nisn: '0102938402',
+      nama: 'Aisyah Putri Rahmadani',
+      formatif: [80, 85, 85],
+      sumatifLingkupMateri: [84, 86, 82],
+      sumatifAkhirSemester: 85,
+      nilaiAkhir: 84,
+      capaianKompetensi: 'Menunjukkan pemahaman baik dalam merancang algoritma dan mengoperasikan perangkat lunak aplikasi.'
+    },
+    {
+      no: 3,
+      nisn: '0102938403',
+      nama: 'Bagus Setiawan',
+      formatif: [75, 78, 80],
+      sumatifLingkupMateri: [78, 80, 76],
+      sumatifAkhirSemester: 80,
+      nilaiAkhir: 78,
+      capaianKompetensi: 'Cukup mampu dalam merancang flowchart, perlu penguatan pada integrasi dokumen pengolah kata dan tabel.'
+    },
+    {
+      no: 4,
+      nisn: '0102938404',
+      nama: 'Cantika Dewi Lestari',
+      formatif: [90, 92, 95],
+      sumatifLingkupMateri: [94, 96, 92],
+      sumatifAkhirSemester: 95,
+      nilaiAkhir: 94,
+      capaianKompetensi: 'Sangat terampil dalam memecahkan teka-teki logika komputasi dan menyusun dokumen formal terstandar.'
+    },
+    {
+      no: 5,
+      nisn: '0102938405',
+      nama: 'Dimas Anggara',
+      formatif: [65, 70, 72],
+      sumatifLingkupMateri: [68, 72, 70],
+      sumatifAkhirSemester: 72,
+      nilaiAkhir: 70,
+      capaianKompetensi: 'Mencapai kriteria ketuntasan minimal, memerlukan latihan mandiri dalam pembuatan bagan alir terstruktur.'
+    }
+  ],
+
+  // 11. Kisi-kisi & Butir Soal Penilaian
+  kisiKisiSoal: [
+    {
+      no: 1,
+      tujuanPembelajaran: 'Menerapkan 4 fondasi Berpikir Komputasional (BK)',
+      materi: 'Dekomposisi Masalah',
+      indikatorSoal: 'Disajikan sebuah masalah sehari-hari, peserta didik dapat menentukan langkah dekomposisi yang tepat.',
+      levelKognitif: 'C3',
+      bentukSoal: 'Pilihan Ganda',
+      nomorSoal: 1,
+      butirSoal: 'Saat sebuah sepeda motor mogok, montir memeriksa busi, bahan bakar, dan kelistrikan satu per satu. Tindakan montir ini mencerminkan pilar berpikir komputasional yaitu...',
+      kunciJawaban: 'A. Dekomposisi',
+      skor: 20
+    },
+    {
+      no: 2,
+      tujuanPembelajaran: 'Menerapkan 4 fondasi Berpikir Komputasional (BK)',
+      materi: 'Pengenalan Pola',
+      indikatorSoal: 'Diberikan pola deret urutan instruksi, peserta didik mampu memprediksi instruksi selanjutnya.',
+      levelKognitif: 'C4',
+      bentukSoal: 'Pilihan Ganda',
+      nomorSoal: 2,
+      butirSoal: 'Kemampuan mengenali kesamaan ciri atau kecenderungan dari beberapa permasalahan terdahulu disebut...',
+      kunciJawaban: 'B. Pattern Recognition (Pengenalan Pola)',
+      skor: 20
+    },
+    {
+      no: 3,
+      tujuanPembelajaran: 'Merancang algoritma langkah terurut dan flowchart',
+      materi: 'Simbol Diagram Alir (Flowchart)',
+      indikatorSoal: 'Disajikan gambar simbol belah ketupat pada flowchart, peserta didik mampu menjelaskan fungsinya.',
+      levelKognitif: 'C2',
+      bentukSoal: 'Pilihan Ganda',
+      nomorSoal: 3,
+      butirSoal: 'Simbol belah ketupat (diamond) pada bagan alir (flowchart) digunakan untuk menyatakan...',
+      kunciJawaban: 'C. Keputusan atau percabangan kondisi (Decision)',
+      skor: 20
+    },
+    {
+      no: 4,
+      tujuanPembelajaran: 'Mengoperasikan pengolah kata dan lembar kerja',
+      materi: 'Integrasi Dokumen Perkantoran',
+      indikatorSoal: 'Peserta didik dapat menguraikan langkah menghubungkan tabel lembar kerja ke naskah pengolah kata.',
+      levelKognitif: 'C4',
+      bentukSoal: 'Uraian',
+      nomorSoal: 4,
+      butirSoal: 'Jelaskan manfaat dan langkah dasar melakukan integrasi grafik dari spreadsheet ke dokumen pengolah kata (Word)!',
+      kunciJawaban: 'Manfaat: data terhubung otomatis saat diperbarui. Langkah: Copy grafik di spreadsheet -> Paste Special / Link Data di Word.',
+      skor: 40
+    }
+  ],
+
+  // 12. Analisis Hasil Evaluasi
+  analisisEvaluasi: {
+    tujuanPembelajaran: 'Menerapkan Fondasi Berpikir Komputasional & Flowchart (Sumatif Lingkup Materi 1)',
+    jumlahPeserta: 32,
+    jumlahTuntas: 29,
+    jumlahBelumTuntas: 3,
+    dayaSerapPersen: 87.5,
+    kesimpulan: 'Secara klasikal pembelajaran materi Berpikir Komputasional telah tuntas karena ketuntasan mencapai di atas 85% (87.5%).',
+    tindakLanjutKlasikal: 'Tiga orang siswa yang belum mencapai KKTP akan mengikuti program remedial terfokus pada sub-materi diagram alir logika percabangan.'
+  },
+
+  // 13. Program & Kartu Pelaksanaan Remedial
+  programRemedial: [
+    {
+      no: 1,
+      namaSiswa: 'Dimas Anggara',
+      nisn: '0102938405',
+      tpBelumTuntas: 'TP 7.1.2 Merancang diagram alir percabangan kondisi (Decision)',
+      nilaiAwal: 62,
+      bentukBimbingan: 'Pemberian bimbingan perorangan dan latihan soal simbol belah ketupat serta relasi logika Ya/Tidak.',
+      nilaiAkhirRemedial: 76,
+      status: 'Tuntas',
+      keterangan: 'Tuntas setelah bimbingan tatap muka 1 sesi.'
+    },
+    {
+      no: 2,
+      namaSiswa: 'Haikal Rabbani',
+      nisn: '0102938408',
+      tpBelumTuntas: 'TP 7.1.1 Dekomposisi masalah kompleks menjadi sub-masalah',
+      nilaiAwal: 60,
+      bentukBimbingan: 'Tutor sebaya didampingi Cantika Dewi Lestari menggunakan contoh kasus perencanaan pesta ulang tahun.',
+      nilaiAkhirRemedial: 78,
+      status: 'Tuntas',
+      keterangan: 'Tuntas dengan peningkatan pemahaman yang baik.'
+    },
+    {
+      no: 3,
+      namaSiswa: 'Bagus Setiawan',
+      nisn: '0102938403',
+      tpBelumTuntas: 'TP 7.1.2 Ketelitian alur pada bagan alir (terminator & connector)',
+      nilaiAwal: 65,
+      bentukBimbingan: 'Penugasan terstruktur membuat flowchart kegiatan persiapan berangkat sekolah.',
+      nilaiAkhirRemedial: 75,
+      status: 'Tuntas',
+      keterangan: 'Tuntas memenuhi batas KKTP minimal.'
+    }
+  ],
+
+  // 14. Program & Kartu Pelaksanaan Pengayaan
+  programPengayaan: [
+    {
+      no: 1,
+      namaSiswa: 'Cantika Dewi Lestari',
+      nisn: '0102938404',
+      tpPengayaan: 'Eksplorasi Algoritma dan Pemrograman Visual Lanjut',
+      nilaiAwal: 95,
+      bentukAktivitas: 'Pemberian modul tantangan Bebras Task Internasional dan proyek mandiri logika blok Scratch.',
+      hasilPengayaan: 'Mampu menyelesaikan 5 soal Bebras kategori Benjamins dengan skor sempurna.',
+      keterangan: 'Direkomendasikan mewakili sekolah dalam Olimpiade Sains/Informatika.'
+    },
+    {
+      no: 2,
+      namaSiswa: 'Aditya Pratama',
+      nisn: '0102938401',
+      tpPengayaan: 'Pembuatan Template Dokumen Otomatis Terpadu',
+      nilaiAwal: 90,
+      bentukAktivitas: 'Mengeksplorasi fitur Mail Merge (surat massal) pada pengolah kata terhubung ke data spreadsheet.',
+      hasilPengayaan: 'Berhasil membuat simulasi cetak kartu peserta ujian secara massal menggunakan Mail Merge.',
+      keterangan: 'Menjadi tutor sebaya yang aktif bagi teman sekelas.'
+    }
+  ],
+
+  // 15. Lembar Kerja Peserta Didik (LKPD)
+  lkpd: {
+    judul: 'Lembar Kerja Peserta Didik (LKPD 1): Eksplorasi 4 Fondasi Berpikir Komputasional',
+    mataPelajaran: 'Informatika',
+    faseKelas: 'Fase D / Kelas VII',
+    alokasiWaktu: '2 x 40 Menit (Kelompok)',
+    tujuanAktivitas: [
+      'Peserta didik dapat menguraikan masalah nyata menjadi beberapa bagian kecil (Dekomposisi).',
+      'Peserta didik dapat menemukan pola berulang dalam kejadian sehari-hari (Pengenalan Pola).',
+      'Peserta didik dapat memilah informasi esensial dan mengabaikan hal yang tidak relevan (Abstraksi).',
+      'Peserta didik dapat menyusun langkah terurut penyelesaian masalah (Algoritma).'
+    ],
+    petunjukBelajar: [
+      'Bentuklah kelompok yang terdiri dari 4-5 orang anggota.',
+      'Bacalah cerita studi kasus di bawah ini dengan seksama dan cermat.',
+      'Diskusikan pertanyaan panduan bersama seluruh anggota kelompok.',
+      'Tuliskan hasil kerja kelompok pada kolom jawaban yang tersedia.',
+      'Pilihlah salah satu juru bicara untuk mempresentasikan hasil diskusi di depan kelas!'
+    ],
+    stimulusMateri: 'STUDI KASUS: "PANITIA BAZAR MAKANAN SEHAT SEKOLAH"\nSekolah kalian akan mengadakan bazar makanan sehat dalam rangka perayaan Hari Pangan Sedunia. Kelas VII-A ditugaskan untuk mengelola stan penjualan jus buah segar. Kalian memiliki modal Rp 200.000, 3 jenis buah lokal, 1 blender, dan waktu berjualan selama 3 jam. Kalian harus memastikan buah tidak membusuk, antrean pembeli teratur, dan modal tidak merugi.',
+    langkahKegiatan: [
+      'Langkah 1 (Dekomposisi): Uraikan apa saja kebutuhan dan pembagian tugas dalam kelompok (pembelian bahan, produksi jus, kasir, promosi).',
+      'Langkah 2 (Pengenalan Pola): Tinjau pola antrean pembeli. Kapan kira-kira puncak pembeli datang paling ramai (jam istirahat)?',
+      'Langkah 3 (Abstraksi): Informasi apa yang wajib dicatat di kasir? (Apakah warna pakaian pembeli penting dicatat? Tentu abaikan!).',
+      'Langkah 4 (Algoritma): Tuliskan instruksi langkah demi langkah dari saat pesanan masuk hingga jus diserahkan kepada pembeli.'
+    ],
+    pertanyaanTugas: [
+      { no: 1, pertanyaan: 'Tuliskan rincian pembagian sub-tugas yang kalian buat pada langkah Dekomposisi!', bobot: 25 },
+      { no: 2, pertanyaan: 'Pola apa yang kalian temukan terkait kebiasaan jajan siswa di sekolah pada langkah Pengenalan Pola?', bobot: 25 },
+      { no: 3, pertanyaan: 'Sebutkan 3 hal penting yang harus dicatat dan 2 hal yang tidak perlu dicatat (Abstraksi)!', bobot: 25 },
+      { no: 4, pertanyaan: 'Buatlah diagram alir / flowchart pembuatan 1 gelas jus buah dari awal sampai siap diminum (Algoritma)!', bobot: 25 }
+    ],
+    rubrikPenilaian: [
+      {
+        kriteria: 'Dekomposisi Masalah',
+        skor4: 'Menguraikan tugas dengan sangat rinci, lengkap, dan proporsional antar anggota.',
+        skor3: 'Menguraikan tugas dengan cukup lengkap namun ada pembagian yang kurang seimbang.',
+        skor2: 'Hanya menyebutkan 1-2 tugas secara umum.',
+        skor1: 'Belum mampu membagi masalah menjadi sub-tugas.'
+      },
+      {
+        kriteria: 'Alur Algoritma / Flowchart',
+        skor4: 'Langkah sangat runtut, jelas, menggunakan simbol flowchart standar secara sempurna.',
+        skor3: 'Langkah runtut tetapi masih terdapat sedikit kekeliruan pada arah anak panah.',
+        skor2: 'Langkah kurang runtut dan belum memakai bagan terstruktur.',
+        skor1: 'Langkah acak dan tidak dapat dipahami.'
+      }
+    ]
+  }
+};
+
+export const initialSupervisiPoints: SupervisiPoint[] = [
+  {
+    id: 1,
+    namaKomponen: 'Kalender Pendidikan & Analisis Alokasi Waktu (Minggu Efektif)',
+    deskripsi: 'Memuat pemetaan minggu kalender akademik dinas, rincian minggu efektif, jam pelajaran, dan minggu non-efektif.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Rincian alokasi waktu tersusun sangat sistematis dan sesuai kalender dinas provinsi.',
+    rekomendasi: 'Pertahankan ketelitian perhitungannya.'
+  },
+  {
+    id: 2,
+    namaKomponen: 'Program Tahunan (Prota)',
+    deskripsi: 'Memuat distribusi Capaian Pembelajaran (CP) dan alokasi JP selama satu tahun ajaran.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Distribusi materi dan JP per semester berimbang dan realistis.',
+    rekomendasi: 'Dapat dijadikan model rujukan guru sejawat.'
+  },
+  {
+    id: 3,
+    namaKomponen: 'Program Semester (Promes)',
+    deskripsi: 'Penjabaran detail alokasi waktu tiap minggu per bulan selama satu semester berjalan.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Format promes jelas, matriks mingguan terisi lengkap.',
+    rekomendasi: 'Lakukan penyesuaian jika ada agenda dadakan dari sekolah.'
+  },
+  {
+    id: 4,
+    namaKomponen: 'Alur Tujuan Pembelajaran (ATP)',
+    deskripsi: 'Urutan Tujuan Pembelajaran logis, memuat Profil Pelajar Pancasila, indikator ketercapaian, dan glosarium.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Alur TP tersusun hierarkis dari konkret ke abstrak, P3 terintegrasi nyata.',
+    rekomendasi: 'Sangat baik.'
+  },
+  {
+    id: 5,
+    namaKomponen: 'Modul Ajar / RPP Kurikulum Merdeka',
+    deskripsi: 'Memuat identitas, kompetensi awal, profil pelajar pancasila, tujuan, pemantik, langkah PBL/PjBL, dan asesmen.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Sintaks Problem Based Learning tampak jelas, pertanyaan pemantik memancing nalar kritis.',
+    rekomendasi: 'Pertahankan kualitas rancangan pembelajaran berdiferensiasi.'
+  },
+  {
+    id: 6,
+    namaKomponen: 'Jadwal Pelajaran / Tatap Muka Mingguan',
+    deskripsi: 'Jadwal resmi mengajar di kelas sesuai beban kerja guru.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Sesuai dengan pembagian tugas mengajar dari Kepala Sekolah.',
+    rekomendasi: 'Lengkap dan sah.'
+  },
+  {
+    id: 7,
+    namaKomponen: 'Agenda Harian / Jurnal Mengajar Guru',
+    deskripsi: 'Catatan harian tatap muka, kehadiran siswa, ketercapaian materi, dan refleksi kendala di kelas.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Jurnal diisi rutin setiap selesai KBM dengan catatan refleksi yang jujur dan membangun.',
+    rekomendasi: 'Lanjutkan pengisian berkala secara tertib.'
+  },
+  {
+    id: 8,
+    namaKomponen: 'Kriteria Ketercapaian Tujuan Pembelajaran (KKTP)',
+    deskripsi: 'Penetapan kriteria ketercapaian berupa interval nilai, deskripsi kriteria, atau rubrik.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Menggunakan pendekatan interval nilai lengkap dengan deskripsi kualitatif per rentang.',
+    rekomendasi: 'Sangat jelas bagi siswa dan orang tua.'
+  },
+  {
+    id: 9,
+    namaKomponen: 'Daftar Hadir / Presensi Siswa',
+    deskripsi: 'Rekapitulasi kehadiran siswa (Hadir, Sakit, Izin, Alpa) dan persentase kehadiran.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Buku presensi bersih, rapi, dan persentase kehadiran dihitung akurat.',
+    rekomendasi: 'Tindak lanjuti segera siswa yang memiliki izin sakit lebih dari 3 hari.'
+  },
+  {
+    id: 10,
+    namaKomponen: 'Buku Daftar Nilai (Formatif & Sumatif)',
+    deskripsi: 'Memuat nilai asesmen awal, formatif proses, sumatif materi, sumatif akhir, dan deskripsi capaian.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Daftar nilai terdokumentasi lengkap, deskripsi capaian kompetensi menggambarkan kemajuan siswa.',
+    rekomendasi: 'Sangat baik.'
+  },
+  {
+    id: 11,
+    namaKomponen: 'Kisi-kisi & Butir Soal Penilaian / Asesmen',
+    deskripsi: 'Memuat indikator soal, level kognitif (C1-C6), bentuk soal, kartu butir soal, dan kunci jawaban.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Soal HOTS (Level C3-C4) sudah proporsional, kunci jawaban dan penskoran jelas.',
+    rekomendasi: 'Perbanyak stimulus berbasis literasi numerasi kontekstual.'
+  },
+  {
+    id: 12,
+    namaKomponen: 'Analisis Hasil Evaluasi / Asesmen Pembelajaran',
+    deskripsi: 'Analisis daya serap, ketuntasan belajar klasikal, identifikasi butir soal sulit.',
+    kondisi: 'Ada',
+    skor: 3,
+    catatanSupervisor: 'Analisis daya serap sudah ada (87.5%), namun perlu ditambah analisis per butir soal.',
+    rekomendasi: 'Lengkapi analisis taraf kesukaran butir soal.'
+  },
+  {
+    id: 13,
+    namaKomponen: 'Program & Pelaksanaan Remedial',
+    deskripsi: 'Memuat daftar siswa belum tuntas, materi yang diulang, bentuk bimbingan, dan nilai hasil remedial.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Ada kartu remedial dengan bukti tutor sebaya dan nilai perkembangan yang jelas.',
+    rekomendasi: 'Pertahankan metode tutor sebaya yang efektif.'
+  },
+  {
+    id: 14,
+    namaKomponen: 'Program & Pelaksanaan Pengayaan',
+    deskripsi: 'Program untuk siswa yang telah tuntas melampaui kriteria, berupa proyek eksploratif/soal tantangan.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'Program pengayaan nyata dengan pemberian tantangan soal Bebras internasional.',
+    rekomendasi: 'Sangat inovatif.'
+  },
+  {
+    id: 15,
+    namaKomponen: 'Lembar Kerja Peserta Didik (LKPD)',
+    deskripsi: 'Memuat petunjuk belajar, tujuan, stimulus masalah kontekstual, langkah kerja, dan rubrik penilaian.',
+    kondisi: 'Ada',
+    skor: 4,
+    catatanSupervisor: 'LKPD sangat menarik berbasis studi kasus nyata dan memicu kerja sama tim.',
+    rekomendasi: 'Siap untuk didiseminasikan dalam MGMP sekolah.'
+  }
+];
+
+export const initialSupervisiRecord: SupervisiRecord = {
+  id: 'SUP-2024-001',
+  tanggalSupervisi: '12 Agustus 2024',
+  supervisorName: 'Dr. Hj. Siti Nurhasanah, M.Pd.',
+  supervisorNip: '19710815 199702 2 001',
+  teacherName: 'Budi Santoso, S.Pd., Gr.',
+  subject: 'Informatika',
+  grade: 'Kelas VII',
+  points: initialSupervisiPoints,
+  totalSkor: 59,
+  nilaiPersentase: 98.33,
+  predikat: 'A (Amat Baik)',
+  catatanUmum: 'Seluruh perangkat administrasi guru lengkap, mutakhir sesuai kurikulum merdeka, dan sangat layak menjadi contoh di lingkungan satuan pendidikan.',
+  saranTindakLanjut: 'Pertahankan konsistensi implementasi modul ajar di dalam kelas dan diseminasikan praktik baik ke rekan guru sejawat.',
+  status: 'Selesai'
+};

@@ -79,3 +79,4 @@ Aplikasi ini mengintegrasikan seluruh instrumen administrasi pembelajaran ke dal
 4. **Hubungkan Database Cloud**:
    - Buka tab **Storage** di Vercel > Pilih **Postgres** (Neon) > Klik **Create & Connect**.
    - Klik **Redeploy** pada project Anda.
+"# administrasi-supervisi-guru." 

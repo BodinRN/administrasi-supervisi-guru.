@@ -1,6 +1,7 @@
 {
   "name": "administrasi-supervisi-guru",
   "version": "1.0.0",
+  "description": "SIPEN-GURU: Aplikasi Fullstack pembantu guru dalam menyusun dan mengelola 15 Poin Administrasi Supervisi Akademik Kurikulum Merdeka lengkap dengan generator dokumen, evaluasi skor mandiri, format cetak resmi A4, dan integrasi database cloud PostgreSQL.",
   "private": true,
   "scripts": {
     "dev": "next dev",

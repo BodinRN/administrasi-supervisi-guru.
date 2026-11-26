@@ -6,7 +6,7 @@ import { exampleDocuments } from '@/lib/exampleData';
 import { KopSurat } from '../KopSurat';
 import { TandaTangan } from '../TandaTangan';
 import { ReferencePanel } from '../ReferencePanel';
-import { Plus, Trash2, Edit2, Check, Printer } from 'lucide-react';
+import { Plus, Trash2, Edit2, Check, Printer, FileUp, Eye, EyeOff, FileText, ExternalLink } from 'lucide-react';
 
 interface Props {
   data: AlokasiWaktuData;
@@ -20,6 +20,10 @@ export const DocAlokasiWaktu: React.FC<Props> = ({ data, profile, onSave }) => {
   const [activeSemester, setActiveSemester] = useState<'Ganjil' | 'Genap'>(
     profile.semester === 'Genap' ? 'Genap' : 'Ganjil'
   );
+  const [showKalenderPreview, setShowKalenderPreview] = useState(true);
+  const [sessionKalenderUrl, setSessionKalenderUrl] = useState<string | null>(null);
+  const [sessionKalenderMime, setSessionKalenderMime] = useState<string>('application/pdf');
+  const [kalenderNotice, setKalenderNotice] = useState<string | null>(null);
 
   useEffect(() => {
     setFormData(data);
@@ -63,6 +67,77 @@ export const DocAlokasiWaktu: React.FC<Props> = ({ data, profile, onSave }) => {
     onSave(formData);
     setIsEditing(false);
   };
+
+  const handleUploadKalender = (file?: File) => {
+    if (!file) return;
+    setKalenderNotice(null);
+
+    const isPdf = file.type === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf');
+    const isImage = file.type.startsWith('image/');
+    if (!isPdf && !isImage) {
+      setKalenderNotice('Format file harus berupa PDF (.pdf) atau Gambar (PNG/JPG).');
+      return;
+    }
+
+    const maxCloudBytes = 450 * 1024; // 450 KB agar aman dengan batas dokumen Firestore 1 MB
+    setShowKalenderPreview(true);
+
+    if (file.size <= maxCloudBytes) {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const dataUrl = reader.result as string;
+        if (sessionKalenderUrl) {
+          URL.revokeObjectURL(sessionKalenderUrl);
+          setSessionKalenderUrl(null);
+        }
+        const updated: AlokasiWaktuData = {
+          ...formData,
+          kalenderPdfName: file.name,
+          kalenderPdfDataUrl: dataUrl,
+        };
+        setFormData(updated);
+        onSave(updated);
+        setKalenderNotice('Kalender Pendidikan berhasil diunggah & disimpan ke cloud!');
+      };
+      reader.readAsDataURL(file);
+    } else {
+      if (sessionKalenderUrl) URL.revokeObjectURL(sessionKalenderUrl);
+      const blobUrl = URL.createObjectURL(file);
+      setSessionKalenderUrl(blobUrl);
+      setSessionKalenderMime(isPdf ? 'application/pdf' : file.type);
+      const updated: AlokasiWaktuData = {
+        ...formData,
+        kalenderPdfName: file.name,
+        kalenderPdfDataUrl: undefined,
+      };
+      setFormData(updated);
+      onSave(updated);
+      setKalenderNotice(
+        `File (${(file.size / 1024).toFixed(0)} KB) ditampilkan untuk sesi ini agar tidak melebihi batas cloud 450 KB. Silakan sesuaikan tabel di bawah sambil melihat kalender ini.`
+      );
+    }
+  };
+
+  const handleRemoveKalender = () => {
+    if (sessionKalenderUrl) {
+      URL.revokeObjectURL(sessionKalenderUrl);
+      setSessionKalenderUrl(null);
+    }
+    setKalenderNotice(null);
+    const updated: AlokasiWaktuData = {
+      ...formData,
+      kalenderPdfName: undefined,
+      kalenderPdfDataUrl: undefined,
+    };
+    setFormData(updated);
+    onSave(updated);
+  };
+
+  const activeKalenderUrl = sessionKalenderUrl || formData.kalenderPdfDataUrl || null;
+  const activeKalenderIsPdf = activeKalenderUrl
+    ? activeKalenderUrl.startsWith('data:application/pdf') ||
+      (sessionKalenderUrl ? sessionKalenderMime === 'application/pdf' : false)
+    : false;
 
   return (
     <div className="printable-document bg-white p-6 md:p-10 shadow-sm border border-slate-200 rounded-lg max-w-5xl mx-auto text-slate-800">
@@ -126,6 +201,100 @@ export const DocAlokasiWaktu: React.FC<Props> = ({ data, profile, onSave }) => {
           onSave(exampleDocuments.alokasiWaktu);
         }}
       />
+
+      {/* Panel Upload & Pratinjau PDF Kalender Pendidikan (no-print) */}
+      <div className="no-print mb-5 rounded-lg border border-sky-200 bg-sky-50/50 text-xs overflow-hidden">
+        <div className="flex flex-wrap items-center justify-between gap-2 px-3.5 py-2.5 bg-sky-100/70 border-b border-sky-200/70">
+          <div className="flex items-center gap-2 font-bold text-sky-950">
+            <FileText className="w-4 h-4 text-sky-600 shrink-0" />
+            <span>Acuan Kalender Pendidikan (PDF / Gambar)</span>
+            {formData.kalenderPdfName && (
+              <span className="px-2 py-0.5 rounded bg-white text-sky-800 border border-sky-200 font-medium text-[10px] truncate max-w-[200px]">
+                {formData.kalenderPdfName}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-1.5">
+            <label className="cursor-pointer inline-flex items-center gap-1 px-2.5 py-1 bg-sky-600 hover:bg-sky-700 text-white rounded font-semibold text-[11px] transition shadow-sm">
+              <FileUp className="w-3 h-3" />
+              {activeKalenderUrl ? 'Ganti File Kalender' : 'Unggah PDF / Gambar Kalender'}
+              <input
+                type="file"
+                accept="application/pdf,image/*"
+                className="hidden"
+                onChange={(e) => {
+                  handleUploadKalender(e.target.files?.[0]);
+                  e.target.value = '';
+                }}
+              />
+            </label>
+
+            {activeKalenderUrl && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => setShowKalenderPreview((v) => !v)}
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded font-semibold text-[11px] transition"
+                >
+                  {showKalenderPreview ? <EyeOff className="w-3 h-3" /> : <Eye className="w-3 h-3" />}
+                  {showKalenderPreview ? 'Tutup Pratinjau' : 'Lihat Pratinjau'}
+                </button>
+                <a
+                  href={activeKalenderUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1 px-2.5 py-1 bg-white hover:bg-slate-100 text-slate-700 border border-slate-300 rounded font-semibold text-[11px] transition"
+                >
+                  <ExternalLink className="w-3 h-3" /> Buka Tab Baru
+                </a>
+                <button
+                  type="button"
+                  onClick={handleRemoveKalender}
+                  className="inline-flex items-center gap-1 px-2 py-1 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 rounded font-semibold text-[11px] transition"
+                >
+                  <Trash2 className="w-3 h-3" /> Hapus
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        {kalenderNotice && (
+          <div className="px-3.5 py-2 bg-amber-50 border-b border-amber-200 text-amber-900 text-[11px]">
+            {kalenderNotice}
+          </div>
+        )}
+
+        {activeKalenderUrl && showKalenderPreview ? (
+          <div className="p-3 bg-white">
+            <p className="text-[11px] text-slate-500 mb-2">
+              Klik <strong>Edit Data</strong> di kanan atas, lalu sesuaikan angka <em>Jumlah Minggu</em>, <em>Minggu Efektif</em>, dan <em>Kegiatan Non-Efektif</em> di bawah sambil melihat kalender ini.
+            </p>
+            {activeKalenderIsPdf ? (
+              <iframe
+                src={activeKalenderUrl}
+                title="Pratinjau Kalender Pendidikan PDF"
+                className="w-full h-[460px] rounded border border-slate-200"
+              />
+            ) : (
+              <div className="max-h-[460px] overflow-auto border border-slate-200 rounded bg-slate-50 p-2 text-center">
+                <img
+                  src={activeKalenderUrl}
+                  alt="Kalender Pendidikan"
+                  className="max-w-full mx-auto rounded"
+                />
+              </div>
+            )}
+          </div>
+        ) : (
+          !activeKalenderUrl && (
+            <div className="px-3.5 py-2.5 text-[11px] text-slate-600">
+              Punya file PDF / gambar Kalender Pendidikan dari Dinas atau Kemenag? Unggah di sini agar tampil berdampingan saat Anda mengisi rincian pekan efektif di bawah. (Tidak ikut tercetak saat print A4.)
+            </div>
+          )
+        )}
+      </div>
 
       <KopSurat
         profile={profile}

@@ -43,6 +43,8 @@ export interface AlokasiWaktuData {
   alokasiCadanganJP?: number;
   kegiatanNonEfektif: { kegiatan: string; jumlahMinggu: number }[];
   catatanDistribusi: string;
+  kalenderPdfName?: string;
+  kalenderPdfDataUrl?: string;
 }
 
 // 2. Program Tahunan (Prota)

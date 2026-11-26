@@ -31,6 +31,7 @@ import { DocLkpd } from '@/components/docs/DocLkpd';
 import { SupervisiChecklist } from '@/components/SupervisiChecklist';
 import { ProfileModal } from '@/components/ProfileModal';
 import { RegulationModal } from '@/components/RegulationModal';
+import { ChangePasswordModal } from '@/components/ChangePasswordModal';
 
 // Icons
 import {
@@ -59,7 +60,8 @@ import {
   Database,
   RefreshCw,
   LogOut,
-  AlertCircle
+  AlertCircle,
+  KeyRound
 } from 'lucide-react';
 
 const FIREBASE_CONFIGURED = !!(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
@@ -97,6 +99,7 @@ export default function HomePage() {
   // Modals
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isRegModalOpen, setIsRegModalOpen] = useState(false);
+  const [isPasswordModalOpen, setIsPasswordModalOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const showToast = (msg: string) => {
@@ -484,7 +487,7 @@ export default function HomePage() {
                       }`}
                     ></span>
                     <span className="font-semibold tracking-wide">
-                      {isSyncing ? 'Sinkronisasi...' : mode === 'supabase' && dbState.connected ? 'Supabase Pribadi' : 'Lokal Browser'}
+                      {isSyncing ? 'Sinkronisasi...' : mode === 'supabase' && dbState.connected ? 'Firebase Pribadi' : 'Lokal Browser'}
                     </span>
                     {dbState.lastSynced && (
                       <span className="text-[9px] text-slate-400 border-l border-slate-700 pl-1.5 ml-0.5">
@@ -535,10 +538,21 @@ export default function HomePage() {
               <span className="hidden sm:inline">Cetak</span>
             </button>
 
+            {mode === 'supabase' && userEmail && (
+              <button
+                onClick={() => setIsPasswordModalOpen(true)}
+                className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded text-xs font-medium border border-slate-700 transition"
+                title="Ganti Kata Sandi Akun"
+              >
+                <KeyRound className="w-3.5 h-3.5 text-amber-400" />
+                <span className="hidden lg:inline">Ganti Sandi</span>
+              </button>
+            )}
+
             <button
               onClick={handleLogout}
               className="flex items-center gap-1 px-2.5 py-1.5 bg-slate-800 hover:bg-rose-900/60 text-slate-300 hover:text-rose-200 rounded text-xs font-medium border border-slate-700 transition"
-              title={mode === 'supabase' ? 'Keluar Akun' : 'Masuk ke Akun Supabase'}
+              title={mode === 'supabase' ? 'Keluar Akun' : 'Masuk ke Akun Firebase'}
             >
               <LogOut className="w-3.5 h-3.5" />
               <span className="hidden lg:inline">{mode === 'supabase' ? 'Keluar' : 'Login'}</span>
@@ -664,12 +678,12 @@ export default function HomePage() {
                     : 'bg-amber-50 text-amber-700 border border-amber-200'
                 }`}
               >
-                {mode === 'supabase' && dbState.connected ? 'Supabase Aktif' : 'Lokal'}
+                {mode === 'supabase' && dbState.connected ? 'Firebase Aktif' : 'Lokal'}
               </span>
             </div>
 
             <div className="bg-slate-50 p-2 rounded-lg border border-slate-200 text-[11px] space-y-1 font-mono text-slate-600">
-              <div className="truncate"><strong className="text-slate-800">Mode:</strong> {mode === 'supabase' ? 'Supabase Cloud' : 'Browser Lokal'}</div>
+              <div className="truncate"><strong className="text-slate-800">Mode:</strong> {mode === 'supabase' ? 'Firebase Cloud' : 'Browser Lokal'}</div>
               <div className="truncate" title={dbState.host}><strong className="text-slate-800">Host:</strong> {dbState.host}</div>
               {userEmail && <div className="truncate" title={userEmail}><strong className="text-slate-800">User:</strong> {userEmail}</div>}
               {dbState.lastSynced && (
@@ -680,20 +694,31 @@ export default function HomePage() {
             </div>
 
             {mode === 'supabase' ? (
-              <button
-                onClick={refreshFromSupabase}
-                disabled={isSyncing}
-                className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 border border-slate-200 rounded text-xs transition disabled:opacity-50"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isSyncing ? 'animate-spin' : ''}`} />
-                {isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Ulang Supabase'}
-              </button>
+              <div className="space-y-1.5">
+                <button
+                  onClick={refreshFromSupabase}
+                  disabled={isSyncing}
+                  className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-emerald-700 hover:bg-emerald-50 border border-slate-200 rounded text-xs transition disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-3.5 h-3.5 text-emerald-600 ${isSyncing ? 'animate-spin' : ''}`} />
+                  {isSyncing ? 'Menyinkronkan...' : 'Sinkronkan Ulang Firebase'}
+                </button>
+                {userEmail && (
+                  <button
+                    onClick={() => setIsPasswordModalOpen(true)}
+                    className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-slate-700 hover:text-sky-700 hover:bg-sky-50 border border-slate-200 rounded text-xs transition"
+                  >
+                    <KeyRound className="w-3.5 h-3.5 text-amber-500" />
+                    Ganti Kata Sandi
+                  </button>
+                )}
+              </div>
             ) : (
               <button
                 onClick={handleLogout}
                 className="w-full flex items-center justify-center gap-1.5 px-3 py-1.5 text-sky-700 bg-sky-50 hover:bg-sky-100 border border-sky-200 rounded text-xs font-semibold transition"
               >
-                <Database className="w-3.5 h-3.5" /> Hubungkan ke Akun Supabase
+                <Database className="w-3.5 h-3.5" /> Hubungkan ke Akun Firebase
               </button>
             )}
           </div>
@@ -1080,6 +1105,14 @@ export default function HomePage() {
           });
           showToast('Komponen regulasi direset ke 15 poin standar!');
         }}
+      />
+
+      {/* MODAL GANTI KATA SANDI */}
+      <ChangePasswordModal
+        isOpen={isPasswordModalOpen}
+        onClose={() => setIsPasswordModalOpen(false)}
+        userEmail={userEmail}
+        onSuccess={(msg) => showToast(msg)}
       />
     </div>
   );

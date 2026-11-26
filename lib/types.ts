@@ -11,6 +11,8 @@ export interface SchoolProfile {
   headerLine1?: string; // e.g. "PEMERINTAH KABUPATEN ..." atau "YAYASAN ..."
   headerLine2?: string; // e.g. "DINAS PENDIDIKAN DAN KEBUDAYAAN"
   jenjang?: string; // e.g. "SD/MI", "SMP/MTs", "SMA/MA", "SMK"
+  logoLeft?: string; // Base64/Data URL logo kiri kop surat
+  logoRight?: string; // Base64/Data URL logo kanan kop surat
   headmasterName: string;
   headmasterNip: string;
   supervisorName: string;

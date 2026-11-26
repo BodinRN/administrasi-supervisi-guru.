@@ -13,6 +13,8 @@ export const initialProfile: SchoolProfile = {
   headerLine1: '',
   headerLine2: 'DINAS PENDIDIKAN DAN KEBUDAYAAN',
   jenjang: '',
+  logoLeft: '',
+  logoRight: '',
   headmasterName: '',
   headmasterNip: '',
   supervisorName: '',

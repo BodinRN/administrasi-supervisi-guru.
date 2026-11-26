@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { SchoolProfile } from '@/lib/types';
 import { FASE_KURIKULUM_MERDEKA } from '@/lib/references';
-import { X, Save, School, User, BookOpen } from 'lucide-react';
+import { X, Save, School, User, BookOpen, Upload, Trash2, ImageIcon } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -14,12 +14,61 @@ interface Props {
 
 export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave }) => {
   const [formData, setFormData] = useState<SchoolProfile>(profile);
+  const [logoError, setLogoError] = useState<string | null>(null);
 
   useEffect(() => {
     setFormData(profile);
+    setLogoError(null);
   }, [profile, isOpen]);
 
   if (!isOpen) return null;
+
+  const handleLogoUpload = (side: 'logoLeft' | 'logoRight', file?: File) => {
+    if (!file) return;
+    setLogoError(null);
+
+    if (!file.type.startsWith('image/')) {
+      setLogoError('File harus berupa gambar (PNG, JPG, WebP, atau SVG).');
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      setLogoError('Ukuran file maksimal 5 MB.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      const result = reader.result as string;
+      const img = new Image();
+      img.onload = () => {
+        const maxDim = 240;
+        let { width, height } = img;
+        if (width > maxDim || height > maxDim) {
+          const ratio = Math.min(maxDim / width, maxDim / height);
+          width = Math.round(width * ratio);
+          height = Math.round(height * ratio);
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) {
+          setFormData((prev) => ({ ...prev, [side]: result }));
+          return;
+        }
+        ctx.clearRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        const compressed = canvas.toDataURL('image/png');
+        setFormData((prev) => ({ ...prev, [side]: compressed }));
+      };
+      img.onerror = () => {
+        setLogoError('Gagal membaca file gambar. Coba file lain.');
+      };
+      img.src = result;
+    };
+    reader.readAsDataURL(file);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +124,96 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   placeholder="Contoh: DINAS PENDIDIKAN DAN KEBUDAYAAN"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
+              </div>
+
+              {/* Upload Logo Kiri & Kanan Kop Surat */}
+              <div className="md:col-span-2 bg-slate-50 border border-slate-200 rounded-lg p-3">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="font-semibold text-slate-700 flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-sky-600" /> Logo Kop Surat (Kiri &amp; Kanan)
+                  </span>
+                  <span className="text-[10px] text-slate-500">PNG/JPG/WebP • Otomatis dioptimalkan</span>
+                </div>
+                {logoError && (
+                  <p className="text-[11px] text-rose-600 mb-2">{logoError}</p>
+                )}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {/* Logo Kiri */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-2.5 flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden">
+                      {formData.logoLeft ? (
+                        <img src={formData.logoLeft} alt="Logo Kiri" className="max-w-full max-h-full object-contain p-0.5" />
+                      ) : (
+                        <span className="text-[10px] text-slate-400 text-center px-1">Kosong</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-700 text-[11px]">Logo Kiri</p>
+                      <p className="text-[10px] text-slate-400 mb-1.5">Pemda / Kemenag / Tut Wuri</p>
+                      <div className="flex items-center gap-1.5">
+                        <label className="cursor-pointer inline-flex items-center gap-1 px-2 py-1 rounded bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-semibold text-[10px] transition">
+                          <Upload className="w-3 h-3" /> Unggah
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              handleLogoUpload('logoLeft', e.target.files?.[0]);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
+                        {formData.logoLeft && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, logoLeft: '' })}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-[10px] transition"
+                          >
+                            <Trash2 className="w-3 h-3" /> Hapus
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Logo Kanan */}
+                  <div className="bg-white border border-slate-200 rounded-lg p-2.5 flex items-center gap-3">
+                    <div className="w-14 h-14 rounded-lg border border-dashed border-slate-300 bg-slate-50 flex items-center justify-center shrink-0 overflow-hidden">
+                      {formData.logoRight ? (
+                        <img src={formData.logoRight} alt="Logo Kanan" className="max-w-full max-h-full object-contain p-0.5" />
+                      ) : (
+                        <span className="text-[10px] text-slate-400 text-center px-1">Kosong</span>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-slate-700 text-[11px]">Logo Kanan</p>
+                      <p className="text-[10px] text-slate-400 mb-1.5">Logo Sekolah / Madrasah</p>
+                      <div className="flex items-center gap-1.5">
+                        <label className="cursor-pointer inline-flex items-center gap-1 px-2 py-1 rounded bg-sky-50 hover:bg-sky-100 text-sky-700 border border-sky-200 font-semibold text-[10px] transition">
+                          <Upload className="w-3 h-3" /> Unggah
+                          <input
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              handleLogoUpload('logoRight', e.target.files?.[0]);
+                              e.target.value = '';
+                            }}
+                          />
+                        </label>
+                        {formData.logoRight && (
+                          <button
+                            type="button"
+                            onClick={() => setFormData({ ...formData, logoRight: '' })}
+                            className="inline-flex items-center gap-1 px-2 py-1 rounded bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-semibold text-[10px] transition"
+                          >
+                            <Trash2 className="w-3 h-3" /> Hapus
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
               <div>
                 <label className="block text-slate-600 font-medium mb-1">Nama Sekolah / Madrasah *</label>

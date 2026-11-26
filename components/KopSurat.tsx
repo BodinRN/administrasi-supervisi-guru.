@@ -29,29 +29,59 @@ export const KopSurat: React.FC<KopSuratProps> = ({
     profile.postalCode?.trim() ? `Kode Pos ${profile.postalCode.trim()}` : ''
   ].filter(Boolean);
 
+  const hasAnyLogo = Boolean(profile.logoLeft || profile.logoRight);
+
   return (
     <div className="w-full mb-6">
       {/* Header Kop Surat Standar Dinas Pendidikan */}
-      <div className="text-center relative pb-3 border-b-2 border-black">
-        <div className="uppercase tracking-wide text-xs md:text-sm font-semibold text-slate-700">
-          {line1}
-        </div>
-        <div className="uppercase tracking-wide text-xs md:text-sm font-semibold text-slate-700">
-          {line2}
-        </div>
-        <div className="uppercase text-lg md:text-xl font-extrabold text-slate-900 tracking-wider my-0.5">
-          {profile.schoolName?.trim() || 'NAMA SATUAN PENDIDIKAN (ISI DI PROFIL)'}
-        </div>
-        <div className="text-[11px] md:text-xs text-slate-600">
-          {addressParts.length > 0 ? addressParts.join(' • ') : 'Alamat Satuan Pendidikan'}
-        </div>
-        {(profile.npsn || profile.schoolEmail || profile.schoolWebsite) && (
-          <div className="text-[10px] md:text-xs text-slate-500 space-x-3 mt-0.5">
-            {profile.npsn && <span>NPSN: <strong>{profile.npsn}</strong></span>}
-            {profile.schoolEmail && <span>Surel: {profile.schoolEmail}</span>}
-            {profile.schoolWebsite && <span>Laman: {profile.schoolWebsite}</span>}
+      <div className="relative pb-3 border-b-2 border-black">
+        <div className={hasAnyLogo ? 'flex items-center justify-between gap-3 md:gap-4' : 'text-center'}>
+          {hasAnyLogo && (
+            <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 flex items-center justify-center">
+              {profile.logoLeft && (
+                <img
+                  src={profile.logoLeft}
+                  alt="Logo Kiri Kop Surat"
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </div>
+          )}
+
+          <div className="flex-1 text-center min-w-0">
+            <div className="uppercase tracking-wide text-xs md:text-sm font-semibold text-slate-700">
+              {line1}
+            </div>
+            <div className="uppercase tracking-wide text-xs md:text-sm font-semibold text-slate-700">
+              {line2}
+            </div>
+            <div className="uppercase text-lg md:text-xl font-extrabold text-slate-900 tracking-wider my-0.5">
+              {profile.schoolName?.trim() || 'NAMA SATUAN PENDIDIKAN (ISI DI PROFIL)'}
+            </div>
+            <div className="text-[11px] md:text-xs text-slate-600">
+              {addressParts.length > 0 ? addressParts.join(' • ') : 'Alamat Satuan Pendidikan'}
+            </div>
+            {(profile.npsn || profile.schoolEmail || profile.schoolWebsite) && (
+              <div className="text-[10px] md:text-xs text-slate-500 space-x-3 mt-0.5">
+                {profile.npsn && <span>NPSN: <strong>{profile.npsn}</strong></span>}
+                {profile.schoolEmail && <span>Surel: {profile.schoolEmail}</span>}
+                {profile.schoolWebsite && <span>Laman: {profile.schoolWebsite}</span>}
+              </div>
+            )}
           </div>
-        )}
+
+          {hasAnyLogo && (
+            <div className="w-16 h-16 md:w-20 md:h-20 shrink-0 flex items-center justify-center">
+              {profile.logoRight && (
+                <img
+                  src={profile.logoRight}
+                  alt="Logo Kanan Kop Surat"
+                  className="max-w-full max-h-full object-contain"
+                />
+              )}
+            </div>
+          )}
+        </div>
 
         {/* Garis Ganda Standar Kop Surat Resmi (Tebal & Tipis) */}
         <div className="absolute -bottom-[3px] left-0 right-0 border-b border-black"></div>

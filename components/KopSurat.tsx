@@ -16,29 +16,42 @@ export const KopSurat: React.FC<KopSuratProps> = ({
   nomorDokumen,
   subJudul
 }) => {
+  const line1 =
+    profile.headerLine1?.trim() ||
+    (profile.province?.trim() ? `PEMERINTAH ${profile.province.toUpperCase()}` : 'PEMERINTAH PROVINSI / KABUPATEN / YAYASAN');
+  const line2 =
+    profile.headerLine2?.trim() || 'DINAS PENDIDIKAN DAN KEBUDAYAAN';
+
+  const addressParts = [
+    profile.schoolAddress?.trim(),
+    profile.district?.trim(),
+    profile.city?.trim(),
+    profile.postalCode?.trim() ? `Kode Pos ${profile.postalCode.trim()}` : ''
+  ].filter(Boolean);
+
   return (
     <div className="w-full mb-6">
       {/* Header Kop Surat Standar Dinas Pendidikan */}
       <div className="text-center relative pb-3 border-b-2 border-black">
         <div className="uppercase tracking-wide text-xs md:text-sm font-semibold text-slate-700">
-          PEMERINTAH {profile.province ? profile.province.toUpperCase() : 'PROVINSI / KABUPATEN'}
+          {line1}
         </div>
         <div className="uppercase tracking-wide text-xs md:text-sm font-semibold text-slate-700">
-          DINAS PENDIDIKAN DAN KEBUDAYAAN
+          {line2}
         </div>
         <div className="uppercase text-lg md:text-xl font-extrabold text-slate-900 tracking-wider my-0.5">
-          {profile.schoolName || 'NAMA SATUAN PENDIDIKAN'}
+          {profile.schoolName?.trim() || 'NAMA SATUAN PENDIDIKAN (ISI DI PROFIL)'}
         </div>
-        <div className="text-[11px] md:text-xs text-slate-600 space-x-2">
-          <span>{profile.schoolAddress}</span>
-          {profile.city && <span>• {profile.city}</span>}
-          {profile.postalCode && <span>• Kode Pos {profile.postalCode}</span>}
+        <div className="text-[11px] md:text-xs text-slate-600">
+          {addressParts.length > 0 ? addressParts.join(' • ') : 'Alamat Satuan Pendidikan'}
         </div>
-        <div className="text-[10px] md:text-xs text-slate-500 space-x-3 mt-0.5">
-          {profile.npsn && <span>NPSN: <strong>{profile.npsn}</strong></span>}
-          {profile.schoolEmail && <span>Surel: {profile.schoolEmail}</span>}
-          {profile.schoolWebsite && <span>Laman: {profile.schoolWebsite}</span>}
-        </div>
+        {(profile.npsn || profile.schoolEmail || profile.schoolWebsite) && (
+          <div className="text-[10px] md:text-xs text-slate-500 space-x-3 mt-0.5">
+            {profile.npsn && <span>NPSN: <strong>{profile.npsn}</strong></span>}
+            {profile.schoolEmail && <span>Surel: {profile.schoolEmail}</span>}
+            {profile.schoolWebsite && <span>Laman: {profile.schoolWebsite}</span>}
+          </div>
+        )}
 
         {/* Garis Ganda Standar Kop Surat Resmi (Tebal & Tipis) */}
         <div className="absolute -bottom-[3px] left-0 right-0 border-b border-black"></div>
@@ -59,12 +72,12 @@ export const KopSurat: React.FC<KopSuratProps> = ({
             Nomor: {nomorDokumen}
           </p>
         )}
-        <div className="inline-flex items-center gap-2 mt-2 px-3 py-1 bg-slate-100 rounded text-[11px] font-medium text-slate-700 border border-slate-200 print:bg-transparent print:border-none">
-          <span>Tahun Ajaran: <strong>{profile.academicYear}</strong></span>
+        <div className="inline-flex flex-wrap items-center justify-center gap-2 mt-2 px-3 py-1 bg-slate-100 rounded text-[11px] font-medium text-slate-700 border border-slate-200 print:bg-transparent print:border-none">
+          <span>Tahun Ajaran: <strong>{profile.academicYear || '-'}</strong></span>
           <span>•</span>
-          <span>Semester: <strong>{profile.semester}</strong></span>
+          <span>Semester: <strong>{profile.semester || '-'}</strong></span>
           <span>•</span>
-          <span>Fase/Kelas: <strong>{profile.phase} / {profile.grade}</strong></span>
+          <span>Fase/Kelas: <strong>{profile.phase || '-'} / {profile.grade || '-'}</strong></span>
         </div>
       </div>
     </div>

@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SchoolProfile } from '@/lib/types';
-import { X, Save, School, User, Calendar, BookOpen } from 'lucide-react';
+import { FASE_KURIKULUM_MERDEKA } from '@/lib/references';
+import { X, Save, School, User, BookOpen } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -13,6 +14,10 @@ interface Props {
 
 export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave }) => {
   const [formData, setFormData] = useState<SchoolProfile>(profile);
+
+  useEffect(() => {
+    setFormData(profile);
+  }, [profile, isOpen]);
 
   if (!isOpen) return null;
 
@@ -29,7 +34,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold flex items-center gap-2">
-              <School className="w-5 h-5 text-sky-400" /> Pengaturan Profil Sekolah & Guru
+              <School className="w-5 h-5 text-sky-400" /> Pengaturan Profil Sekolah &amp; Guru
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
               Data ini akan otomatis tercantum pada seluruh Kop Surat dan Tanda Tangan 15 Dokumen Administrasi.
@@ -48,16 +53,37 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
           {/* Bagian 1: Identitas Satuan Pendidikan */}
           <div>
             <h4 className="font-bold text-slate-800 uppercase text-xs flex items-center gap-1.5 border-b pb-1 mb-3">
-              <School className="w-4 h-4 text-sky-600" /> I. Identitas Satuan Pendidikan
+              <School className="w-4 h-4 text-sky-600" /> I. Identitas Satuan Pendidikan &amp; Kop Surat
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Nama Sekolah</label>
+                <label className="block text-slate-600 font-medium mb-1">Baris 1 Kop Surat (Pemda / Yayasan / Kemenag)</label>
+                <input
+                  type="text"
+                  value={formData.headerLine1 || ''}
+                  onChange={(e) => setFormData({ ...formData, headerLine1: e.target.value })}
+                  placeholder="Contoh: PEMERINTAH KOTA BANDUNG / YAYASAN ..."
+                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">Baris 2 Kop Surat (Dinas / Instansi)</label>
+                <input
+                  type="text"
+                  value={formData.headerLine2 || ''}
+                  onChange={(e) => setFormData({ ...formData, headerLine2: e.target.value })}
+                  placeholder="Contoh: DINAS PENDIDIKAN DAN KEBUDAYAAN"
+                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">Nama Sekolah / Madrasah *</label>
                 <input
                   type="text"
                   required
                   value={formData.schoolName}
                   onChange={(e) => setFormData({ ...formData, schoolName: e.target.value })}
+                  placeholder="Contoh: SDN 1 Harapan / SMPN 2 ... / SMAN 1 ..."
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -67,6 +93,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.npsn}
                   onChange={(e) => setFormData({ ...formData, npsn: e.target.value })}
+                  placeholder="8 digit NPSN sekolah"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -76,6 +103,17 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.schoolAddress}
                   onChange={(e) => setFormData({ ...formData, schoolAddress: e.target.value })}
+                  placeholder="Jalan, nomor, desa/kelurahan"
+                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">Kecamatan</label>
+                <input
+                  type="text"
+                  value={formData.district}
+                  onChange={(e) => setFormData({ ...formData, district: e.target.value })}
+                  placeholder="Contoh: Kec. Banjarmasin Selatan"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -85,6 +123,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.city}
                   onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                  placeholder="Contoh: Kota Banjarmasin"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -94,6 +133,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.province}
                   onChange={(e) => setFormData({ ...formData, province: e.target.value })}
+                  placeholder="Contoh: Kalimantan Selatan"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -103,6 +143,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.postalCode}
                   onChange={(e) => setFormData({ ...formData, postalCode: e.target.value })}
+                  placeholder="Contoh: 70248"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -112,6 +153,17 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.schoolEmail}
                   onChange={(e) => setFormData({ ...formData, schoolEmail: e.target.value })}
+                  placeholder="email@sekolah.sch.id"
+                  className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-600 font-medium mb-1">Website Sekolah (Opsional)</label>
+                <input
+                  type="text"
+                  value={formData.schoolWebsite}
+                  onChange={(e) => setFormData({ ...formData, schoolWebsite: e.target.value })}
+                  placeholder="https://sekolah.sch.id"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -121,7 +173,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
           {/* Bagian 2: Pejabat & Guru */}
           <div>
             <h4 className="font-bold text-slate-800 uppercase text-xs flex items-center gap-1.5 border-b pb-1 mb-3">
-              <User className="w-4 h-4 text-indigo-600" /> II. Identitas Pimpinan & Guru
+              <User className="w-4 h-4 text-indigo-600" /> II. Identitas Pimpinan &amp; Guru
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
               <div>
@@ -130,6 +182,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.headmasterName}
                   onChange={(e) => setFormData({ ...formData, headmasterName: e.target.value })}
+                  placeholder="Nama lengkap Kepala Sekolah"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -139,25 +192,28 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.headmasterNip}
                   onChange={(e) => setFormData({ ...formData, headmasterNip: e.target.value })}
+                  placeholder="NIP / NIY Kepala Sekolah"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none font-mono"
                 />
               </div>
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Nama Guru yang Disupervisi</label>
+                <label className="block text-slate-600 font-medium mb-1">Nama Guru yang Disupervisi *</label>
                 <input
                   type="text"
                   required
                   value={formData.teacherName}
                   onChange={(e) => setFormData({ ...formData, teacherName: e.target.value })}
+                  placeholder="Nama lengkap & gelar Anda"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-slate-600 font-medium mb-1">NIP Guru</label>
+                <label className="block text-slate-600 font-medium mb-1">NIP / NUPTK Guru</label>
                 <input
                   type="text"
                   value={formData.teacherNip}
                   onChange={(e) => setFormData({ ...formData, teacherNip: e.target.value })}
+                  placeholder="NIP / PPPK / NUPTK"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none font-mono"
                 />
               </div>
@@ -167,6 +223,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.supervisorName}
                   onChange={(e) => setFormData({ ...formData, supervisorName: e.target.value })}
+                  placeholder="Nama Pengawas / Supervisor"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
@@ -176,6 +233,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   type="text"
                   value={formData.supervisorNip}
                   onChange={(e) => setFormData({ ...formData, supervisorNip: e.target.value })}
+                  placeholder="NIP Pengawas"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none font-mono"
                 />
               </div>
@@ -185,28 +243,35 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
           {/* Bagian 3: Pembelajaran & Periode */}
           <div>
             <h4 className="font-bold text-slate-800 uppercase text-xs flex items-center gap-1.5 border-b pb-1 mb-3">
-              <BookOpen className="w-4 h-4 text-emerald-600" /> III. Konteks Pembelajaran & Waktu
+              <BookOpen className="w-4 h-4 text-emerald-600" /> III. Konteks Pembelajaran &amp; Waktu
             </h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Mata Pelajaran</label>
+                <label className="block text-slate-600 font-medium mb-1">Mata Pelajaran / Guru Kelas *</label>
                 <input
                   type="text"
                   required
                   value={formData.subject}
                   onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
+                  placeholder="Contoh: Matematika / Guru Kelas IV"
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
                 />
               </div>
               <div>
-                <label className="block text-slate-600 font-medium mb-1">Fase</label>
+                <label className="block text-slate-600 font-medium mb-1">Fase (Referensi Kurikulum Merdeka)</label>
                 <input
                   type="text"
+                  list="fase-list"
                   value={formData.phase}
                   onChange={(e) => setFormData({ ...formData, phase: e.target.value })}
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
-                  placeholder="Contoh: Fase D (SMP)"
+                  placeholder="Pilih atau ketik Fase..."
                 />
+                <datalist id="fase-list">
+                  {FASE_KURIKULUM_MERDEKA.map((f) => (
+                    <option key={f.value} value={f.value} label={f.label} />
+                  ))}
+                </datalist>
               </div>
               <div>
                 <label className="block text-slate-600 font-medium mb-1">Kelas</label>
@@ -215,7 +280,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   value={formData.grade}
                   onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
-                  placeholder="Contoh: Kelas VII"
+                  placeholder="Contoh: Kelas IV / Kelas VII"
                 />
               </div>
               <div>
@@ -225,7 +290,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   value={formData.academicYear}
                   onChange={(e) => setFormData({ ...formData, academicYear: e.target.value })}
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
-                  placeholder="2024/2025"
+                  placeholder="Contoh: 2026/2027"
                 />
               </div>
               <div>
@@ -246,7 +311,7 @@ export const ProfileModal: React.FC<Props> = ({ isOpen, onClose, profile, onSave
                   value={formData.documentDate}
                   onChange={(e) => setFormData({ ...formData, documentDate: e.target.value })}
                   className="w-full border border-slate-300 rounded px-2.5 py-1.5 focus:ring-2 focus:ring-sky-500 outline-none"
-                  placeholder="15 Juli 2024"
+                  placeholder="Contoh: 15 Juli 2026"
                 />
               </div>
             </div>

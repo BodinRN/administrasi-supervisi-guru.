@@ -8,6 +8,9 @@ export interface SchoolProfile {
   postalCode: string;
   schoolEmail: string;
   schoolWebsite: string;
+  headerLine1?: string; // e.g. "PEMERINTAH KABUPATEN ..." atau "YAYASAN ..."
+  headerLine2?: string; // e.g. "DINAS PENDIDIKAN DAN KEBUDAYAAN"
+  jenjang?: string; // e.g. "SD/MI", "SMP/MTs", "SMA/MA", "SMK"
   headmasterName: string;
   headmasterNip: string;
   supervisorName: string;
@@ -17,9 +20,9 @@ export interface SchoolProfile {
   subject: string;
   phase: string; // e.g. "Fase D (SMP/MTs)", "Fase E (SMA/SMK Kelas 10)"
   grade: string; // e.g. "Kelas VII", "Kelas X"
-  academicYear: string; // e.g. "2024/2025"
+  academicYear: string; // e.g. "2026/2027"
   semester: string; // "Ganjil" | "Genap"
-  documentDate: string; // e.g. "15 Juli 2024"
+  documentDate: string; // e.g. "15 Juli 2026"
 }
 
 // 1. Analisis Alokasi Waktu / Pekan Efektif
@@ -35,6 +38,7 @@ export interface AlokasiWaktuData {
   semesterGanjil: PekanBulan[];
   semesterGenap: PekanBulan[];
   jamPelajaranPerMinggu: number;
+  alokasiCadanganJP?: number;
   kegiatanNonEfektif: { kegiatan: string; jumlahMinggu: number }[];
   catatanDistribusi: string;
 }
@@ -186,6 +190,15 @@ export interface SoalItem {
 }
 
 // 12. Analisis Hasil Evaluasi
+export interface AnalisisButirItem {
+  noSoal: number;
+  materi: string;
+  jumlahBenar: number;
+  dayaSerapPersen: number;
+  tingkatKesukaran: 'Mudah' | 'Sedang' | 'Sukar';
+  keterangan: string;
+}
+
 export interface AnalisisHasilItem {
   tujuanPembelajaran: string;
   jumlahPeserta: number;
@@ -194,6 +207,7 @@ export interface AnalisisHasilItem {
   dayaSerapPersen: number;
   kesimpulan: string;
   tindakLanjutKlasikal: string;
+  analisisButirSoal?: AnalisisButirItem[];
 }
 
 // 13. Program & Kartu Pelaksanaan Remedial
@@ -260,7 +274,7 @@ export interface SupervisiPoint {
   namaKomponen: string;
   deskripsi: string;
   kondisi: 'Ada' | 'Tidak Ada';
-  skor: number; // 1 - 4
+  skor: number; // 0 - 4 (0 = belum dinilai / tidak ada)
   catatanSupervisor: string;
   rekomendasi: string;
 }
@@ -274,9 +288,9 @@ export interface SupervisiRecord {
   subject: string;
   grade: string;
   points: SupervisiPoint[];
-  totalSkor: number; // max 60
-  nilaiPersentase: number; // (total / 60) * 100
-  predikat: 'A (Amat Baik)' | 'B (Baik)' | 'C (Cukup)' | 'D (Kurang)';
+  totalSkor: number;
+  nilaiPersentase: number;
+  predikat: 'A (Amat Baik)' | 'B (Baik)' | 'C (Cukup)' | 'D (Kurang)' | 'Belum Dinilai';
   catatanUmum: string;
   saranTindakLanjut: string;
   status: 'Draf' | 'Selesai';

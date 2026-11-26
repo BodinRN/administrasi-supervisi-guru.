@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { SupervisiPoint } from '@/lib/types';
-import { X, Settings, Plus, Trash2, Download, Upload, RotateCcw } from 'lucide-react';
+import { X, Settings, Plus, Trash2, RotateCcw } from 'lucide-react';
 
 interface Props {
   isOpen: boolean;
@@ -21,6 +21,10 @@ export const RegulationModal: React.FC<Props> = ({
 }) => {
   const [items, setItems] = useState<SupervisiPoint[]>(points);
 
+  useEffect(() => {
+    setItems(points);
+  }, [points, isOpen]);
+
   if (!isOpen) return null;
 
   const handleAddPoint = () => {
@@ -28,10 +32,10 @@ export const RegulationModal: React.FC<Props> = ({
       id: items.length + 1,
       namaKomponen: 'Komponen Supervisi Baru (Regulasi Baru)',
       deskripsi: 'Deskripsi kelengkapan bukti fisik dan standar mutu...',
-      kondisi: 'Ada',
-      skor: 4,
-      catatanSupervisor: 'Bukti fisik lengkap.',
-      rekomendasi: 'Pertahankan.'
+      kondisi: 'Tidak Ada',
+      skor: 0,
+      catatanSupervisor: '',
+      rekomendasi: ''
     };
     setItems([...items, newPoint]);
   };
@@ -52,7 +56,7 @@ export const RegulationModal: React.FC<Props> = ({
         <div className="bg-slate-900 text-white px-6 py-4 flex items-center justify-between">
           <div>
             <h3 className="text-base font-bold flex items-center gap-2">
-              <Settings className="w-5 h-5 text-indigo-400" /> Penyesuaian Regulasi & Komponen Supervisi
+              <Settings className="w-5 h-5 text-indigo-400" /> Penyesuaian Regulasi &amp; Komponen Supervisi
             </h3>
             <p className="text-xs text-slate-400 mt-0.5">
               Kelola daftar instrumen jika ada instruksi tambahan dari dinas atau kurikulum baru (Bisa tambah/ubah poin).
@@ -96,7 +100,7 @@ export const RegulationModal: React.FC<Props> = ({
                     value={pt.namaKomponen}
                     onChange={(e) => {
                       const copy = [...items];
-                      copy[idx].namaKomponen = e.target.value;
+                      copy[idx] = { ...copy[idx], namaKomponen: e.target.value };
                       setItems(copy);
                     }}
                     className="w-full font-bold text-slate-900 border rounded px-2 py-1 text-xs"
@@ -106,10 +110,10 @@ export const RegulationModal: React.FC<Props> = ({
                     value={pt.deskripsi}
                     onChange={(e) => {
                       const copy = [...items];
-                      copy[idx].deskripsi = e.target.value;
+                      copy[idx] = { ...copy[idx], deskripsi: e.target.value };
                       setItems(copy);
                     }}
-                    rows={1}
+                    rows={2}
                     className="w-full text-slate-600 border rounded px-2 py-1 text-[11px]"
                     placeholder="Deskripsi bukti fisik yang dinilai..."
                   />

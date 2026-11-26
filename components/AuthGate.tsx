@@ -1,7 +1,11 @@
 'use client';
 
 import React, { useState } from 'react';
-import { getSupabaseBrowserClient } from '@/lib/supabase';
+import { auth } from '@/lib/firebase';
+import {
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+} from 'firebase/auth';
 import {
   ShieldCheck,
   Database,
@@ -13,19 +17,19 @@ import {
   AlertCircle,
   CheckCircle2,
   Loader2,
-  BookOpen
+  BookOpen,
 } from 'lucide-react';
 
 interface AuthGateProps {
   onAuthenticated: () => void;
   onUseLocalMode: () => void;
-  supabaseConfigured: boolean;
+  firebaseConfigured: boolean;
 }
 
 export const AuthGate: React.FC<AuthGateProps> = ({
   onAuthenticated,
   onUseLocalMode,
-  supabaseConfigured,
+  firebaseConfigured,
 }) => {
   const [mode, setMode] = useState<'login' | 'register'>('login');
   const [email, setEmail] = useState('');
@@ -40,9 +44,8 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     setErrorMsg(null);
     setInfoMsg(null);
 
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) {
-      setErrorMsg('Konfigurasi Supabase (.env.local) belum tersedia.');
+    if (!firebaseConfigured) {
+      setErrorMsg('Konfigurasi Firebase (.env.local) belum tersedia.');
       return;
     }
 
@@ -59,41 +62,27 @@ export const AuthGate: React.FC<AuthGateProps> = ({
     setLoading(true);
     try {
       if (mode === 'login') {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
-        if (error) {
-          setErrorMsg(
-            error.message === 'Invalid login credentials'
-              ? 'Email atau kata sandi salah. Pastikan akun sudah terdaftar dan terverifikasi.'
-              : error.message
-          );
-          return;
-        }
-        if (data.session) {
-          onAuthenticated();
-        }
+        await signInWithEmailAndPassword(auth, email.trim(), password);
+        onAuthenticated();
       } else {
-        const { data, error } = await supabase.auth.signUp({
-          email: email.trim(),
-          password,
-        });
-        if (error) {
-          setErrorMsg(error.message);
-          return;
-        }
-        if (data.session) {
+        const { user } = await createUserWithEmailAndPassword(auth, email.trim(), password);
+        if (user) {
+          // Firebase biasanya langsung aktif tanpa perlu verifikasi email
+          // (email verification bersifat opsional)
           onAuthenticated();
-        } else {
-          setInfoMsg(
-            'Pendaftaran berhasil! Silakan cek kotak masuk / folder spam email Anda untuk klik tautan konfirmasi, lalu kembali untuk Masuk.'
-          );
-          setMode('login');
         }
       }
     } catch (err: any) {
-      setErrorMsg(err?.message || 'Terjadi gangguan koneksi ke server autentikasi.');
+      const code = err?.code || '';
+      if (code === 'auth/user-not-found' || code === 'auth/wrong-password' || code === 'auth/invalid-credential') {
+        setErrorMsg('Email atau kata sandi salah. Pastikan akun sudah terdaftar.');
+      } else if (code === 'auth/email-already-in-use') {
+        setErrorMsg('Email ini sudah terdaftar. Silakan masuk atau gunakan email lain.');
+      } else if (code === 'auth/too-many-requests') {
+        setErrorMsg('Terlalu banyak percobaan login. Coba lagi beberapa saat.');
+      } else {
+        setErrorMsg(err?.message || 'Terjadi gangguan koneksi ke server autentikasi.');
+      }
     } finally {
       setLoading(false);
     }
@@ -102,7 +91,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-sky-950 to-slate-900 flex items-center justify-center p-4">
       <div className="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 bg-white rounded-2xl shadow-2xl overflow-hidden border border-slate-800/40">
-        {/* Kolom Kiri: Penjelasan Aplikasi Pribadi Guru */}
+        {/* Kolom Kiri: Penjelasan Aplikasi */}
         <div className="bg-slate-900 text-white p-7 md:p-9 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2.5 mb-6">
@@ -130,16 +119,16 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                 <div>
                   <p className="font-semibold text-white">Privasi Terjaga (Per-Guru)</p>
                   <p className="text-slate-400 text-[11px]">
-                    Data Anda terisolasi di Supabase dengan Row Level Security—hanya bisa diakses oleh akun Anda sendiri.
+                    Data Anda terisolasi di Firebase dengan Security Rules—hanya bisa diakses oleh akun Anda sendiri.
                   </p>
                 </div>
               </div>
               <div className="flex items-start gap-2.5">
                 <Database className="w-4 h-4 text-sky-400 shrink-0 mt-0.5" />
                 <div>
-                  <p className="font-semibold text-white">Database Cloud Gratis (Supabase)</p>
+                  <p className="font-semibold text-white">Database Cloud Gratis (Firebase)</p>
                   <p className="text-slate-400 text-[11px]">
-                    Tersimpan otomatis di cloud PostgreSQL sehingga aman diakses dari laptop maupun perangkat lain.
+                    Tersimpan otomatis di Cloud Firestore sehingga aman diakses dari laptop maupun perangkat lain.
                   </p>
                 </div>
               </div>
@@ -165,10 +154,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
           <div className="flex bg-slate-100 p-1 rounded-lg mb-5">
             <button
               type="button"
-              onClick={() => {
-                setMode('login');
-                setErrorMsg(null);
-              }}
+              onClick={() => { setMode('login'); setErrorMsg(null); }}
               className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                 mode === 'login' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
@@ -177,10 +163,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
             </button>
             <button
               type="button"
-              onClick={() => {
-                setMode('register');
-                setErrorMsg(null);
-              }}
+              onClick={() => { setMode('register'); setErrorMsg(null); }}
               className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
                 mode === 'register' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
               }`}
@@ -255,7 +238,7 @@ export const AuthGate: React.FC<AuthGateProps> = ({
 
             <button
               type="submit"
-              disabled={loading || !supabaseConfigured}
+              disabled={loading || !firebaseConfigured}
               className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}

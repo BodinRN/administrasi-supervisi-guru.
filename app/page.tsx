@@ -3,7 +3,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { SchoolProfile, AdministrasiDocuments, SupervisiRecord } from '@/lib/types';
 import { initialProfile, initialDocuments, initialSupervisiRecord } from '@/lib/initialData';
-import { getSupabaseBrowserClient, getSupabaseInfo } from '@/lib/supabase';
+import { auth } from '@/lib/firebase';
+import { onAuthStateChanged, signOut } from 'firebase/auth';
 import { isDocumentFilled, countFilledDocuments, isProfileComplete, DocKey } from '@/lib/docStatus';
 
 // Auth Gate
@@ -61,9 +62,9 @@ import {
   AlertCircle
 } from 'lucide-react';
 
-export default function HomePage() {
-  const supabaseInfo = getSupabaseInfo();
+const FIREBASE_CONFIGURED = !!(process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
 
+export default function HomePage() {
   const [authReady, setAuthReady] = useState(false);
   const [mode, setMode] = useState<'none' | 'supabase' | 'local'>('none');
   const [accessToken, setAccessToken] = useState<string>('');
@@ -77,7 +78,7 @@ export default function HomePage() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Status Database Supabase Cloud
+  // Status Database Firebase Cloud
   const [dbState, setDbState] = useState<{
     provider: string;
     host: string;
@@ -85,8 +86,8 @@ export default function HomePage() {
     tableName: string;
     lastSynced: string | null;
   }>({
-    provider: 'supabase',
-    host: supabaseInfo.host || 'supabase.co',
+    provider: 'firebase',
+    host: 'firestore.googleapis.com',
     connected: false,
     tableName: 'supervisi_records',
     lastSynced: null,
@@ -120,7 +121,7 @@ export default function HomePage() {
     [profile, documents, supervision, getStorageKey]
   );
 
-  const loadSupabaseData = useCallback(async (token: string, uid: string) => {
+  const loadFirebaseData = useCallback(async (token: string, uid: string) => {
     setIsSyncing(true);
     try {
       const localKey = `sipen_guru_user_data_${uid}`;
@@ -135,7 +136,7 @@ export default function HomePage() {
 
     try {
       const res = await fetch('/api/data', {
-        headers: { Authorization: `Bearer ${token}` }
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (res.ok) {
         const json = await res.json();
@@ -154,8 +155,8 @@ export default function HomePage() {
           } catch {}
         }
         setDbState({
-          provider: 'supabase',
-          host: json.host || supabaseInfo.host,
+          provider: 'firebase',
+          host: json.host || 'firestore.googleapis.com',
           connected: true,
           tableName: json.tableName || 'supervisi_records',
           lastSynced: json.data?.updatedAt
@@ -171,7 +172,7 @@ export default function HomePage() {
       setIsSyncing(false);
       setIsLoading(false);
     }
-  }, [supabaseInfo.host]);
+  }, []);
 
   const loadLocalModeData = useCallback(() => {
     try {
@@ -201,74 +202,52 @@ export default function HomePage() {
     setIsLoading(false);
   }, []);
 
-  // Cek sesi Supabase Auth atau mode lokal saat halaman dibuka
+  // Cek sesi Firebase Auth atau mode lokal saat halaman dibuka
   useEffect(() => {
-    const supabase = getSupabaseBrowserClient();
     let active = true;
 
-    async function initAuth() {
-      if (supabase) {
-        const { data } = await supabase.auth.getSession();
-        if (!active) return;
-        if (data.session) {
-          setMode('supabase');
-          setAccessToken(data.session.access_token);
-          setUserId(data.session.user.id);
-          setUserEmail(data.session.user.email || '');
-          setAuthReady(true);
-          await loadSupabaseData(data.session.access_token, data.session.user.id);
-          return;
-        }
-      }
-
-      const savedMode = localStorage.getItem('sipen_guru_mode');
-      if (savedMode === 'local') {
-        setMode('local');
-        setAuthReady(true);
-        loadLocalModeData();
-        return;
-      }
-
-      setMode('none');
+    const savedMode = localStorage.getItem('sipen_guru_mode');
+    if (savedMode === 'local') {
+      setMode('local');
       setAuthReady(true);
-      setIsLoading(false);
+      loadLocalModeData();
+      return;
     }
 
-    initAuth();
-
-    if (supabase) {
-      const { data: listener } = supabase.auth.onAuthStateChange((_event, session) => {
-        if (session) {
-          localStorage.removeItem('sipen_guru_mode');
-          setMode('supabase');
-          setAccessToken(session.access_token);
-          setUserId(session.user.id);
-          setUserEmail(session.user.email || '');
-          loadSupabaseData(session.access_token, session.user.id);
-        }
-      });
-      return () => {
-        active = false;
-        listener.subscription.unsubscribe();
-      };
-    }
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
+      if (!active) return;
+      if (user) {
+        localStorage.removeItem('sipen_guru_mode');
+        const token = await user.getIdToken();
+        setMode('supabase');
+        setAccessToken(token);
+        setUserId(user.uid);
+        setUserEmail(user.email || '');
+        setAuthReady(true);
+        await loadFirebaseData(token, user.uid);
+      } else {
+        setMode('none');
+        setAuthReady(true);
+        setIsLoading(false);
+      }
+    });
 
     return () => {
       active = false;
+      unsubscribe();
     };
-  }, [loadSupabaseData, loadLocalModeData]);
+  }, [loadFirebaseData, loadLocalModeData]);
 
   const handleAuthenticated = async () => {
-    const supabase = getSupabaseBrowserClient();
-    if (!supabase) return;
     localStorage.removeItem('sipen_guru_mode');
-    const { data } = await supabase.auth.getSession();
-    if (data.session) {
+    const user = auth.currentUser;
+    if (user) {
+      const token = await user.getIdToken();
       setMode('supabase');
-      setAccessToken(data.session.access_token);
-      setUserId(data.session.user.id);
-      setUserEmail(data.session.user.email || '');
-      await loadSupabaseData(data.session.access_token, data.session.user.id);
+      setAccessToken(token);
+      setUserId(user.uid);
+      setUserEmail(user.email || '');
+      await loadFirebaseData(token, user.uid);
     }
   };
 
@@ -280,8 +259,7 @@ export default function HomePage() {
 
   const handleLogout = async () => {
     if (mode === 'supabase') {
-      const supabase = getSupabaseBrowserClient();
-      if (supabase) await supabase.auth.signOut();
+      await signOut(auth);
     } else {
       localStorage.removeItem('sipen_guru_mode');
     }
@@ -297,11 +275,20 @@ export default function HomePage() {
 
   const postToSupabase = async (body: any): Promise<boolean> => {
     if (mode !== 'supabase' || !accessToken) return false;
+    // Refresh token sebelum kirim agar tidak expired
+    let token = accessToken;
+    try {
+      const user = auth.currentUser;
+      if (user) {
+        token = await user.getIdToken();
+        setAccessToken(token);
+      }
+    } catch {}
     const res = await fetch('/api/data', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `Bearer ${accessToken}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify(body),
     });
@@ -309,12 +296,17 @@ export default function HomePage() {
   };
 
   const refreshFromSupabase = async () => {
-    if (mode !== 'supabase' || !accessToken || !userId) {
+    if (mode !== 'supabase' || !userId) {
       showToast('Saat ini Anda menggunakan Mode Offline Lokal Browser.');
       return;
     }
-    await loadSupabaseData(accessToken, userId);
-    showToast('Data pribadi berhasil disinkronkan ulang dari Supabase!');
+    const user = auth.currentUser;
+    if (user) {
+      const token = await user.getIdToken(true);
+      setAccessToken(token);
+      await loadFirebaseData(token, userId);
+    }
+    showToast('Data pribadi berhasil disinkronkan ulang dari Firebase!');
   };
 
   const handleSaveProfile = async (updated: SchoolProfile) => {
@@ -325,7 +317,7 @@ export default function HomePage() {
       try {
         const ok = await postToSupabase({ action: 'update_profile', payload: updated });
         setDbState((prev) => ({ ...prev, connected: ok, lastSynced: new Date().toLocaleTimeString('id-ID') }));
-        showToast(ok ? 'Profil tersimpan di Supabase Cloud!' : 'Profil tersimpan lokal (gagal sinkron ke cloud)');
+        showToast(ok ? 'Profil tersimpan di Firebase Cloud!' : 'Profil tersimpan lokal (gagal sinkron ke cloud)');
       } catch {
         showToast('Profil tersimpan di browser (koneksi offline)');
       } finally {
@@ -345,7 +337,7 @@ export default function HomePage() {
       try {
         const ok = await postToSupabase({ action: 'update_document', payload: { docKey, data } });
         setDbState((prev) => ({ ...prev, connected: ok, lastSynced: new Date().toLocaleTimeString('id-ID') }));
-        showToast(ok ? 'Dokumen tersimpan di Supabase Cloud!' : 'Dokumen tersimpan lokal (gagal sinkron ke cloud)');
+        showToast(ok ? 'Dokumen tersimpan di Firebase Cloud!' : 'Dokumen tersimpan lokal (gagal sinkron ke cloud)');
       } catch {
         showToast('Dokumen tersimpan di browser (koneksi offline)');
       } finally {
@@ -364,7 +356,7 @@ export default function HomePage() {
       try {
         const ok = await postToSupabase({ action: 'update_supervision', payload: updated });
         setDbState((prev) => ({ ...prev, connected: ok, lastSynced: new Date().toLocaleTimeString('id-ID') }));
-        showToast(ok ? 'Penilaian supervisi tersimpan di Supabase Cloud!' : 'Penilaian tersimpan lokal');
+        showToast(ok ? 'Penilaian supervisi tersimpan di Firebase Cloud!' : 'Penilaian tersimpan lokal');
       } catch {
         showToast('Penilaian supervisi tersimpan di browser');
       } finally {
@@ -386,7 +378,7 @@ export default function HomePage() {
         try {
           await postToSupabase({ action: 'reset' });
           setDbState((prev) => ({ ...prev, lastSynced: new Date().toLocaleTimeString('id-ID') }));
-          showToast('Seluruh data dikosongkan ke formulir awal di Supabase!');
+          showToast('Seluruh data dikosongkan ke formulir awal di Firebase!');
         } catch {
           showToast('Data dikosongkan secara lokal.');
         } finally {
@@ -436,7 +428,7 @@ export default function HomePage() {
       <AuthGate
         onAuthenticated={handleAuthenticated}
         onUseLocalMode={handleUseLocalMode}
-        supabaseConfigured={supabaseInfo.configured}
+        firebaseConfigured={FIREBASE_CONFIGURED}
       />
     );
   }

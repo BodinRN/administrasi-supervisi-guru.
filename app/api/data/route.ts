@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
 import {
-  getAuthenticatedUser,
-  getSupabaseUserData,
-  saveSupabaseUserData,
-  getSupabaseInfo,
+  verifyFirebaseToken,
+  getFirebaseUserData,
+  saveFirebaseUserData,
+  getFirebaseInfo,
   createBlankDatabase,
-} from '@/lib/supabase';
+} from '@/lib/firebaseDb';
 
 function extractBearerToken(request: Request): string {
   const authHeader = request.headers.get('authorization') || request.headers.get('Authorization') || '';
@@ -17,14 +17,10 @@ function extractBearerToken(request: Request): string {
 
 export async function GET(request: Request) {
   try {
-    const supabaseInfo = getSupabaseInfo();
-    if (!supabaseInfo.configured) {
+    const info = getFirebaseInfo();
+    if (!info.configured) {
       return NextResponse.json(
-        {
-          success: false,
-          provider: 'unconfigured',
-          error: 'Variabel NEXT_PUBLIC_SUPABASE_URL dan NEXT_PUBLIC_SUPABASE_ANON_KEY belum dikonfigurasi.',
-        },
+        { success: false, provider: 'unconfigured', error: 'Variabel NEXT_PUBLIC_FIREBASE_PROJECT_ID belum dikonfigurasi.' },
         { status: 503 }
       );
     }
@@ -32,57 +28,48 @@ export async function GET(request: Request) {
     const token = extractBearerToken(request);
     if (!token) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Sesi guru tidak ditemukan. Silakan masuk terlebih dahulu.',
-        },
+        { success: false, error: 'Sesi guru tidak ditemukan. Silakan masuk terlebih dahulu.' },
         { status: 401 }
       );
     }
 
-    const user = await getAuthenticatedUser(token);
+    const user = await verifyFirebaseToken(token);
     if (!user) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Sesi login tidak valid atau telah berakhir. Silakan masuk ulang.',
-        },
+        { success: false, error: 'Sesi login tidak valid atau telah berakhir. Silakan masuk ulang.' },
         { status: 401 }
       );
     }
 
-    const result = await getSupabaseUserData(token, user.id);
+    const result = await getFirebaseUserData(user.uid);
     if (!result.data) {
       return NextResponse.json(
-        {
-          success: false,
-          error: result.error || 'Gagal memuat data pribadi dari Supabase.',
-        },
+        { success: false, error: result.error || 'Gagal memuat data pribadi dari Firestore.' },
         { status: 500 }
       );
     }
 
     return NextResponse.json({
       success: true,
-      provider: 'supabase',
-      host: supabaseInfo.host,
-      tableName: supabaseInfo.tableName,
-      userId: user.id,
+      provider: 'firebase',
+      host: info.host,
+      tableName: info.collectionName,
+      userId: user.uid,
       email: user.email,
       data: result.data,
-      message: 'Data pribadi guru berhasil dimuat dari Supabase Cloud.',
+      message: 'Data pribadi guru berhasil dimuat dari Firebase Cloud.',
     });
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Terjadi kesalahan server.' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
-    const supabaseInfo = getSupabaseInfo();
-    if (!supabaseInfo.configured) {
+    const info = getFirebaseInfo();
+    if (!info.configured) {
       return NextResponse.json(
-        { success: false, error: 'Supabase belum dikonfigurasi.' },
+        { success: false, error: 'Firebase belum dikonfigurasi.' },
         { status: 503 }
       );
     }
@@ -90,12 +77,12 @@ export async function POST(request: Request) {
     const token = extractBearerToken(request);
     if (!token) {
       return NextResponse.json(
-        { success: false, error: 'Autentikasi diperlukan untuk menyimpan data ke Supabase.' },
+        { success: false, error: 'Autentikasi diperlukan untuk menyimpan data.' },
         { status: 401 }
       );
     }
 
-    const user = await getAuthenticatedUser(token);
+    const user = await verifyFirebaseToken(token);
     if (!user) {
       return NextResponse.json(
         { success: false, error: 'Sesi login tidak valid atau kedaluwarsa.' },
@@ -103,79 +90,90 @@ export async function POST(request: Request) {
       );
     }
 
-    const body = await request.json();
+    let body: any;
+    try {
+      body = await request.json();
+    } catch {
+      return NextResponse.json({ success: false, error: 'Request body tidak valid (bukan JSON).' }, { status: 400 });
+    }
+
     const { action, payload } = body;
 
     if (action === 'reset') {
       const blank = createBlankDatabase();
-      const res = await saveSupabaseUserData(token, user.id, blank);
+      const res = await saveFirebaseUserData(user.uid, blank);
       if (!res.data) {
         return NextResponse.json({ success: false, error: res.error || 'Gagal mereset data.' }, { status: 500 });
       }
       return NextResponse.json({
         success: true,
-        provider: 'supabase',
+        provider: 'firebase',
         message: 'Seluruh dokumen berhasil dikosongkan ke template awal.',
         data: res.data,
       });
     }
 
     if (action === 'update_profile') {
-      const res = await saveSupabaseUserData(token, user.id, { profile: payload });
+      if (!payload || typeof payload !== 'object') {
+        return NextResponse.json({ success: false, error: 'Parameter payload profil wajib diisi.' }, { status: 400 });
+      }
+      const res = await saveFirebaseUserData(user.uid, { profile: payload });
       if (!res.data) {
         return NextResponse.json({ success: false, error: res.error || 'Gagal menyimpan profil.' }, { status: 500 });
       }
       return NextResponse.json({
         success: true,
-        provider: 'supabase',
-        message: 'Profil sekolah & guru berhasil disimpan ke Supabase.',
+        provider: 'firebase',
+        message: 'Profil sekolah & guru berhasil disimpan ke Firebase.',
         data: res.data,
       });
     }
 
     if (action === 'update_document') {
       const { docKey, data } = payload || {};
-      if (!docKey) {
+      if (!docKey || typeof docKey !== 'string') {
         return NextResponse.json({ success: false, error: 'Parameter docKey wajib diisi.' }, { status: 400 });
       }
 
-      const currentRes = await getSupabaseUserData(token, user.id);
+      const currentRes = await getFirebaseUserData(user.uid);
       if (!currentRes.data) {
         return NextResponse.json({ success: false, error: currentRes.error || 'Gagal mengambil data saat ini.' }, { status: 500 });
       }
 
-      const updatedDocs = {
-        ...currentRes.data.documents,
-        [docKey]: data,
-      };
-
-      const res = await saveSupabaseUserData(token, user.id, { documents: updatedDocs });
+      const updatedDocs = { ...currentRes.data.documents, [docKey]: data };
+      const res = await saveFirebaseUserData(user.uid, { documents: updatedDocs });
       if (!res.data) {
         return NextResponse.json({ success: false, error: res.error || 'Gagal menyimpan dokumen.' }, { status: 500 });
       }
       return NextResponse.json({
         success: true,
-        provider: 'supabase',
-        message: `Dokumen ${docKey} berhasil disimpan ke Supabase.`,
+        provider: 'firebase',
+        message: `Dokumen ${docKey} berhasil disimpan ke Firebase.`,
         data: res.data,
       });
     }
 
     if (action === 'update_supervision') {
-      const res = await saveSupabaseUserData(token, user.id, { supervision: payload });
+      if (!payload || typeof payload !== 'object') {
+        return NextResponse.json({ success: false, error: 'Parameter payload supervisi wajib diisi.' }, { status: 400 });
+      }
+      const res = await saveFirebaseUserData(user.uid, { supervision: payload });
       if (!res.data) {
         return NextResponse.json({ success: false, error: res.error || 'Gagal menyimpan supervisi.' }, { status: 500 });
       }
       return NextResponse.json({
         success: true,
-        provider: 'supabase',
-        message: 'Hasil evaluasi supervisi berhasil disimpan ke Supabase.',
+        provider: 'firebase',
+        message: 'Hasil evaluasi supervisi berhasil disimpan ke Firebase.',
         data: res.data,
       });
     }
 
     if (action === 'import_all') {
-      const res = await saveSupabaseUserData(token, user.id, {
+      if (!payload || typeof payload !== 'object') {
+        return NextResponse.json({ success: false, error: 'Parameter payload import wajib diisi.' }, { status: 400 });
+      }
+      const res = await saveFirebaseUserData(user.uid, {
         profile: payload.profile,
         documents: payload.documents,
         supervision: payload.supervision,
@@ -185,24 +183,17 @@ export async function POST(request: Request) {
       }
       return NextResponse.json({
         success: true,
-        provider: 'supabase',
-        message: 'Seluruh dokumen berhasil dipulihkan dan disinkronkan ke Supabase.',
+        provider: 'firebase',
+        message: 'Seluruh dokumen berhasil dipulihkan dan disinkronkan ke Firebase.',
         data: res.data,
       });
     }
 
-    const res = await saveSupabaseUserData(token, user.id, body);
-    if (!res.data) {
-      return NextResponse.json({ success: false, error: res.error || 'Gagal menyimpan perubahan.' }, { status: 500 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      provider: 'supabase',
-      message: 'Perubahan berhasil disimpan ke Supabase.',
-      data: res.data,
-    });
+    return NextResponse.json(
+      { success: false, error: `Aksi tidak dikenal: ${action || '(kosong)'}` },
+      { status: 400 }
+    );
   } catch (error: any) {
-    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+    return NextResponse.json({ success: false, error: 'Terjadi kesalahan server.' }, { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import { auth } from '@/lib/firebase';
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
 } from 'firebase/auth';
 import {
   ShieldCheck,
@@ -18,6 +19,10 @@ import {
   CheckCircle2,
   Loader2,
   BookOpen,
+  Eye,
+  EyeOff,
+  KeyRound,
+  ArrowLeft,
 } from 'lucide-react';
 
 interface AuthGateProps {
@@ -31,10 +36,12 @@ export const AuthGate: React.FC<AuthGateProps> = ({
   onUseLocalMode,
   firebaseConfigured,
 }) => {
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [mode, setMode] = useState<'login' | 'register' | 'reset'>('login');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [infoMsg, setInfoMsg] = useState<string | null>(null);
@@ -46,6 +53,34 @@ export const AuthGate: React.FC<AuthGateProps> = ({
 
     if (!firebaseConfigured) {
       setErrorMsg('Konfigurasi Firebase (.env.local) belum tersedia.');
+      return;
+    }
+
+    if (mode === 'reset') {
+      if (!email.trim()) {
+        setErrorMsg('Masukkan alamat email Anda terlebih dahulu.');
+        return;
+      }
+      setLoading(true);
+      try {
+        await sendPasswordResetEmail(auth, email.trim());
+        setInfoMsg(
+          'Tautan ganti kata sandi telah dikirim ke email Anda. Periksa kotak masuk atau folder spam, lalu ikuti instruksi untuk membuat kata sandi baru.'
+        );
+      } catch (err: any) {
+        const code = err?.code || '';
+        if (code === 'auth/user-not-found') {
+          setErrorMsg('Email ini belum terdaftar. Silakan daftar akun baru terlebih dahulu.');
+        } else if (code === 'auth/invalid-email') {
+          setErrorMsg('Format alamat email tidak valid.');
+        } else if (code === 'auth/too-many-requests') {
+          setErrorMsg('Terlalu banyak permintaan. Coba lagi beberapa saat.');
+        } else {
+          setErrorMsg(err?.message || 'Gagal mengirim email ganti kata sandi.');
+        }
+      } finally {
+        setLoading(false);
+      }
       return;
     }
 
@@ -149,28 +184,47 @@ export const AuthGate: React.FC<AuthGateProps> = ({
           </div>
         </div>
 
-        {/* Kolom Kanan: Form Masuk / Daftar */}
+        {/* Kolom Kanan: Form Masuk / Daftar / Reset Password */}
         <div className="p-7 md:p-9 flex flex-col justify-center">
-          <div className="flex bg-slate-100 p-1 rounded-lg mb-5">
-            <button
-              type="button"
-              onClick={() => { setMode('login'); setErrorMsg(null); }}
-              className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
-                mode === 'login' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <LogIn className="w-3.5 h-3.5" /> Masuk Akun
-            </button>
-            <button
-              type="button"
-              onClick={() => { setMode('register'); setErrorMsg(null); }}
-              className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
-                mode === 'register' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
-              }`}
-            >
-              <UserPlus className="w-3.5 h-3.5" /> Daftar Guru Baru
-            </button>
-          </div>
+          {mode === 'reset' ? (
+            <div className="mb-5">
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setErrorMsg(null); setInfoMsg(null); }}
+                className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-800 mb-3 transition"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" /> Kembali ke Masuk Akun
+              </button>
+              <div className="flex items-center gap-2">
+                <KeyRound className="w-4 h-4 text-sky-600" />
+                <h3 className="text-sm font-bold text-slate-900">Ganti / Reset Kata Sandi</h3>
+              </div>
+              <p className="text-[11px] text-slate-500 mt-1">
+                Masukkan email akun Anda. Kami akan mengirimkan tautan untuk mengatur kata sandi baru.
+              </p>
+            </div>
+          ) : (
+            <div className="flex bg-slate-100 p-1 rounded-lg mb-5">
+              <button
+                type="button"
+                onClick={() => { setMode('login'); setErrorMsg(null); setInfoMsg(null); }}
+                className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                  mode === 'login' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <LogIn className="w-3.5 h-3.5" /> Masuk Akun
+              </button>
+              <button
+                type="button"
+                onClick={() => { setMode('register'); setErrorMsg(null); setInfoMsg(null); }}
+                className={`flex-1 py-2 rounded-md text-xs font-bold flex items-center justify-center gap-1.5 transition ${
+                  mode === 'register' ? 'bg-white text-slate-900 shadow-sm' : 'text-slate-500 hover:text-slate-700'
+                }`}
+              >
+                <UserPlus className="w-3.5 h-3.5" /> Daftar Guru Baru
+              </button>
+            </div>
+          )}
 
           {errorMsg && (
             <div className="mb-4 p-3 rounded-lg bg-rose-50 border border-rose-200 text-rose-800 text-xs flex items-start gap-2">
@@ -202,21 +256,42 @@ export const AuthGate: React.FC<AuthGateProps> = ({
               </div>
             </div>
 
-            <div>
-              <label className="block text-slate-700 font-semibold mb-1">Kata Sandi</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
-                <input
-                  type="password"
-                  required
-                  minLength={6}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Minimal 6 karakter"
-                  className="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none text-slate-900"
-                />
+            {mode !== 'reset' && (
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="block text-slate-700 font-semibold">Kata Sandi</label>
+                  {mode === 'login' && (
+                    <button
+                      type="button"
+                      onClick={() => { setMode('reset'); setErrorMsg(null); setInfoMsg(null); }}
+                      className="text-[11px] font-semibold text-sky-600 hover:text-sky-700 hover:underline"
+                    >
+                      Lupa / Ganti kata sandi?
+                    </button>
+                  )}
+                </div>
+                <div className="relative">
+                  <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+                  <input
+                    type={showPassword ? 'text' : 'password'}
+                    required
+                    minLength={6}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    placeholder="Minimal 6 karakter"
+                    className="w-full border border-slate-300 rounded-lg pl-9 pr-10 py-2 focus:ring-2 focus:ring-sky-500 outline-none text-slate-900"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword((v) => !v)}
+                    aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Lihat kata sandi'}
+                    className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 p-0.5 rounded"
+                  >
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
+                </div>
               </div>
-            </div>
+            )}
 
             {mode === 'register' && (
               <div>
@@ -224,14 +299,22 @@ export const AuthGate: React.FC<AuthGateProps> = ({
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
                   <input
-                    type="password"
+                    type={showConfirmPassword ? 'text' : 'password'}
                     required
                     minLength={6}
                     value={confirmPassword}
                     onChange={(e) => setConfirmPassword(e.target.value)}
                     placeholder="Ketik ulang kata sandi"
-                    className="w-full border border-slate-300 rounded-lg pl-9 pr-3 py-2 focus:ring-2 focus:ring-sky-500 outline-none text-slate-900"
+                    className="w-full border border-slate-300 rounded-lg pl-9 pr-10 py-2 focus:ring-2 focus:ring-sky-500 outline-none text-slate-900"
                   />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword((v) => !v)}
+                    aria-label={showConfirmPassword ? 'Sembunyikan ulangi kata sandi' : 'Lihat ulangi kata sandi'}
+                    className="absolute right-2.5 top-2 text-slate-400 hover:text-slate-600 p-0.5 rounded"
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
             )}
@@ -242,7 +325,11 @@ export const AuthGate: React.FC<AuthGateProps> = ({
               className="w-full py-2.5 bg-sky-600 hover:bg-sky-700 text-white font-bold rounded-lg shadow-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-              {mode === 'login' ? 'Masuk ke Ruang Kerja Saya' : 'Buat Akun Pribadi Gratis'}
+              {mode === 'login'
+                ? 'Masuk ke Ruang Kerja Saya'
+                : mode === 'register'
+                ? 'Buat Akun Pribadi Gratis'
+                : 'Kirim Tautan Ganti Kata Sandi'}
             </button>
           </form>
 
